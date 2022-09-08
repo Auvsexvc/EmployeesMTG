@@ -1,10 +1,9 @@
-﻿using MTGWebApi.Data;
-using MTGWebApi.Entities;
+﻿using MTGWebApi.Entities;
+using MTGWebApi.Enums;
 using MTGWebApi.Exceptions;
 using MTGWebApi.Helper;
 using MTGWebApi.Interfaces;
 using MTGWebApi.Models;
-using MTGWebApi.Enums;
 
 namespace MTGWebApi.Services
 {
@@ -48,7 +47,7 @@ namespace MTGWebApi.Services
             _logger.LogInformation(string.Format(Messages.MSG_DELETEINVOKED, id));
 
             var employees = await _appDbContext.GetEmployeesAsync();
-            var employee = employees.Find(x => x.Id == id);
+            var employee = employees.FirstOrDefault(x => x.Id == id);
 
             if (employee is null)
             {
@@ -79,7 +78,7 @@ namespace MTGWebApi.Services
         public async Task<EmployeeVM> GetByIdAsync(Guid id)
         {
             var employees = await _appDbContext.GetEmployeesAsync();
-            var employee = employees.Find(x => x.Id == id);
+            var employee = employees.FirstOrDefault(x => x.Id == id);
 
             if (employee is null)
             {
@@ -94,7 +93,7 @@ namespace MTGWebApi.Services
             _logger.LogInformation(string.Format(Messages.MSG_PUTINVOKED, id));
 
             var employees = await _appDbContext.GetEmployeesAsync();
-            var employee = employees.Find(x => x.Id == id);
+            var employee = employees.FirstOrDefault(x => x.Id == id);
 
             if (employee is null)
             {
@@ -131,7 +130,7 @@ namespace MTGWebApi.Services
         {
             var pendingChanges = await _appDbContext.PendingChangesAsync();
 
-            return pendingChanges.Select(x=>MakeEmployeeVM(x));
+            return pendingChanges.Select(x => MakeEmployeeVM(x));
         }
 
         public async Task CancelChangesAsync()

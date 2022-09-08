@@ -1,35 +1,79 @@
 ﻿using MTGWebApi.Entities;
 using MTGWebApi.Enums;
+using MTGWebApi.Interfaces;
 
 namespace MTGWebApi.Data
 {
     public class AppDbContext : IAppDbContext
     {
-        private readonly string _dbFullPath;
-        private readonly string _backupFullPath;
-        private readonly string _tempFullPath;
+        protected readonly string _dbFullPath;
+        protected readonly string _tempFullPath;
 
         public AppDbContext(IConfiguration configuration)
         {
             var dbFile = configuration.GetSection("DbInfo:DbFile").Get<string>();
             var tempFile = configuration.GetSection("DbInfo:TempFile").Get<string>();
-            var bkpFile = configuration.GetSection("DbInfo:BackupFile").Get<string>();
             _dbFullPath = Path.Combine(Environment.CurrentDirectory, dbFile);
             _tempFullPath = Path.Combine(Environment.CurrentDirectory, tempFile);
-            _backupFullPath = Path.Combine(Environment.CurrentDirectory, bkpFile);
         }
 
         public async Task AddAsync(Employee employee)
+        {
+            await SaveEmployeeToFile(employee, _tempFullPath);
+        }
+
+        public async Task DeleteAsync(Employee employee)
         {
             if (!File.Exists(_tempFullPath))
             {
                 await CreateTempFile();
             }
 
-            using var streamWriter = new StreamWriter(_tempFullPath, true);
-            var line = string.Join(';', employee.GetType().GetProperties().Select(p => p.GetValue(employee)));
-            await streamWriter.WriteLineAsync(line);
-            await streamWriter.FlushAsync();
+            if ((await GetEmployeesFromFileAsync(_tempFullPath)).Any(x => x.Id == employee.Id))
+            {
+                var lines = await File.ReadAllLinesAsync(_tempFullPath);
+                var lineNumbersToDelete = Enumerable.Range(0, lines.Length).Where(x => lines[x].Split(';')[0] == employee.Id.ToString()).ToArray();
+
+                var newLines = LineRemover(lines, lineNumbersToDelete);
+                await File.WriteAllLinesAsync(_tempFullPath, newLines);
+            }
+
+            if ((await GetEmployeesFromFileAsync(_dbFullPath)).Any(x => x.Id == employee.Id))
+            {
+                await SaveEmployeeToFile(employee, _tempFullPath);
+            }
+        }
+
+        public async Task UpdateAsync(Employee employee)
+        {
+            if (!File.Exists(_tempFullPath))
+            {
+                await CreateTempFile();
+            }
+
+            if ((await GetEmployeesFromFileAsync(_tempFullPath)).Any(x => x.Id == employee.Id && x.State != Operation.Delete))
+            {
+                var lines = await File.ReadAllLinesAsync(_tempFullPath);
+                var lineNumbersToDelete = Enumerable.Range(0, lines.Length).Where(x => lines[x].Split(';')[0] == employee.Id.ToString() && Enum.Parse<Operation>(lines[x].Split(';')[10]) != Operation.Delete).ToArray();
+                if (lineNumbersToDelete.Any(x => Enum.Parse<Operation>(lines[x].Split(';')[10]) == Operation.Create))
+                {
+                    employee.State = Operation.Create;
+                }
+                var newLines = LineRemover(lines, lineNumbersToDelete);
+                await File.WriteAllLinesAsync(_tempFullPath, newLines);
+            }
+
+            await SaveEmployeeToFile(employee, _tempFullPath);
+        }
+
+        public async Task<IEnumerable<Employee>> GetEmployeesAsync()
+        {
+            if (!File.Exists(_tempFullPath))
+            {
+                return await GetEmployeesFromFileAsync(_dbFullPath);
+            }
+
+            return await DbResultsWithTemp();
         }
 
         public async Task CancelChangesAsync()
@@ -40,30 +84,6 @@ namespace MTGWebApi.Data
             }
         }
 
-        public async Task DeleteAsync(Employee employee)
-        {
-            if (!File.Exists(_tempFullPath))
-            {
-                using (new FileStream(_tempFullPath, FileMode.CreateNew)) { }
-                await Task.Factory.StartNew(() => File.Copy(_dbFullPath, _tempFullPath, true));
-            }
-
-            var lines = await File.ReadAllLinesAsync(_tempFullPath);
-            var lineNumberToDelete = Enumerable.Range(0, lines.Length).FirstOrDefault(x => lines[x].Split(';')[0] == employee.Id.ToString());
-
-            await LineRemover(_tempFullPath, lineNumberToDelete);
-        }
-
-        public async Task<List<Employee>> GetEmployeesAsync()
-        {
-            if (!File.Exists(_tempFullPath))
-            {
-                return await GetEmployeesFromFileAsync(_dbFullPath);
-            }
-
-            return await GetEmployeesFromFileAsync(_tempFullPath);
-        }
-
         public async Task<IEnumerable<Employee>> PendingChangesAsync()
         {
             if (!File.Exists(_tempFullPath))
@@ -71,37 +91,18 @@ namespace MTGWebApi.Data
                 return Enumerable.Empty<Employee>();
             }
 
-            String[] linesA = await File.ReadAllLinesAsync(_dbFullPath);
-            String[] linesB = await File.ReadAllLinesAsync(_tempFullPath);
-
-            var changes = linesB.Except(linesA);
-            var removes = linesA.Except(linesB);
-
-            return changes.Union(removes).Select(l => ConvertToEmployee(l));
+            return await GetEmployeesFromFileAsync(_tempFullPath);
         }
 
         public async Task SaveChangesAsync()
         {
-            if (!File.Exists(_tempFullPath))
+            if (File.Exists(_tempFullPath))
             {
-                await Task.Factory.StartNew(() => File.Replace(_tempFullPath, _dbFullPath, _backupFullPath));
+                await CommitAddAsync();
+                await CommitDeleteAsync();
+                await CommitUpdateAsync();
                 await Task.Factory.StartNew(() => File.Delete(_tempFullPath));
             }
-        }
-
-        public async Task UpdateAsync(Employee employee)
-        {
-            if (!File.Exists(_tempFullPath))
-            {
-                using (new FileStream(_tempFullPath, FileMode.CreateNew)) { }
-                await Task.Factory.StartNew(() => File.Copy(_dbFullPath, _tempFullPath, true));
-            }
-
-            var lines = await File.ReadAllLinesAsync(_tempFullPath);
-            var lineNumberToUpdate = Enumerable.Range(0, lines.Length).FirstOrDefault(x => lines[x].Split(';')[0] == employee.Id.ToString());
-            var lineNewData = string.Join(';', employee.GetType().GetProperties().Select(p => p.GetValue(employee)));
-
-            await LineChanger(lineNewData, _tempFullPath, lineNumberToUpdate);
         }
 
         private static async Task<List<Employee>> GetEmployeesFromFileAsync(string fileName)
@@ -144,24 +145,79 @@ namespace MTGWebApi.Data
             };
         }
 
-        private static async Task LineChanger(string newText, string fileName, int lineNumber)
+        private static string[] LineRemover(string[] lines, int[] lineNumbers)
         {
-            string[] arrLine = await File.ReadAllLinesAsync(fileName);
-            arrLine[lineNumber] = newText;
-            await File.WriteAllLinesAsync(fileName, arrLine);
+            List<string> arrLine = lines.ToList();
+            foreach (var lineNumber in lineNumbers.Reverse())
+            {
+                arrLine.RemoveAt(lineNumber);
+            }
+            return arrLine.ToArray();
         }
 
-        private static async Task LineRemover(string fileName, int lineNumber)
+        private async Task CommitAddAsync()
         {
-            List<string> arrLine = (await File.ReadAllLinesAsync(fileName)).ToList();
-            arrLine.RemoveAt(lineNumber);
-            await File.WriteAllLinesAsync(fileName, arrLine);
+            var x = await GetEmployeesFromFileAsync(_tempFullPath);
+            var toAdd = x.Where(x => x.State == Operation.Create);
+            foreach (var employee in toAdd)
+            {
+                await SaveEmployeeToFile(employee, _dbFullPath);
+            }
+        }
+
+        private async Task CommitDeleteAsync()
+        {
+            var x = await GetEmployeesFromFileAsync(_tempFullPath);
+            var toDelete = x.Where(x => x.State == Operation.Delete);
+
+            var lines = await File.ReadAllLinesAsync(_dbFullPath);
+            var lineNumbersToDelete = Enumerable.Range(0, lines.Length).Where(x => toDelete.Select(x => x.Id.ToString()).Contains(lines[x].Split(';')[0])).ToArray();
+            var newLines = LineRemover(lines, lineNumbersToDelete);
+            await File.WriteAllLinesAsync(_dbFullPath, newLines);
+        }
+
+        private async Task CommitUpdateAsync()
+        {
+            var x = await GetEmployeesFromFileAsync(_tempFullPath);
+            var toUpdate = x.Where(x => x.State == Operation.Update);
+
+            var lines = await File.ReadAllLinesAsync(_dbFullPath);
+            var lineNumbersToUpdate = Enumerable.Range(0, lines.Length).Where(x => toUpdate.Select(x => x.Id.ToString()).Contains(lines[x].Split(';')[0])).ToArray();
+            var newLines = LineRemover(lines, lineNumbersToUpdate);
+            await File.WriteAllLinesAsync(_dbFullPath, newLines);
+
+            foreach (var employee in toUpdate)
+            {
+                await SaveEmployeeToFile(employee, _dbFullPath);
+            }
+        }
+
+        private static async Task SaveEmployeeToFile(Employee employee, string fileName)
+        {
+            using var streamWriter = new StreamWriter(fileName, true);
+            var line = string.Join(';', employee.GetType().GetProperties().Select(p => p.GetValue(employee)));
+            await streamWriter.WriteLineAsync(line);
+            await streamWriter.FlushAsync();
         }
 
         private async Task CreateTempFile()
         {
-            using (new FileStream(_tempFullPath, FileMode.CreateNew)) { }
-            await Task.Factory.StartNew(() => File.Copy(_dbFullPath, _tempFullPath, true));
+            await Task.Run(() =>
+            {
+                using var fileStream = new FileStream(_tempFullPath, FileMode.CreateNew);
+            });
+        }
+
+        private async Task<IEnumerable<Employee>> DbResultsWithTemp()
+        {
+            var dbEmployees = await GetEmployeesFromFileAsync(_dbFullPath);
+            var tempEmployees = await GetEmployeesFromFileAsync(_tempFullPath);
+
+            var tempEmployeesFiltered = tempEmployees.Where(e => e.State != Operation.Delete).GroupBy(x => x.Id).Select(g => g.Last());
+
+            var dbEmployeesFiltered = dbEmployees.ExceptBy(tempEmployees.Select(te => te.Id), x => x.Id);
+
+            return dbEmployeesFiltered.Concat(tempEmployeesFiltered);
         }
     }
 }

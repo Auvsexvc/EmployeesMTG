@@ -1,16 +1,9 @@
 ﻿namespace MTGWebApi.Data
 {
-    public class AppDbInitializer : IHostedService
+    public class AppDbInitializer : AppDbContext, IHostedService
     {
-        private readonly string _dbFullPath;
-        private readonly string _tempFullPath;
-
-        public AppDbInitializer(IConfiguration configuration)
+        public AppDbInitializer(IConfiguration configuration) : base(configuration)
         {
-            var dbFile = configuration.GetSection("DbInfo:DbFile").Get<string>();
-            var tempFile = configuration.GetSection("DbInfo:TempFile").Get<string>();
-            _dbFullPath = Path.Combine(Environment.CurrentDirectory, dbFile);
-            _tempFullPath = Path.Combine(Environment.CurrentDirectory, tempFile);
         }
 
         public async Task StartAsync(CancellationToken cancellationToken)
@@ -31,7 +24,10 @@
 
         private static async Task CreateDbFile(string filePath)
         {
-            using (await Task.Factory.StartNew(() => new FileStream(filePath, FileMode.CreateNew))) { }
+            await Task.Run(() =>
+            {
+                using var fileStream = new FileStream(filePath, FileMode.CreateNew);
+            });
         }
 
         private async Task Init()
@@ -44,7 +40,7 @@
 
         private async Task RemoveTempFile()
         {
-            await Task.Factory.StartNew(() => File.Delete(_tempFullPath));
+            await Task.Run(() => File.Delete(_tempFullPath));
         }
     }
 }

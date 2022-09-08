@@ -44,7 +44,7 @@ namespace MTGWebApi.Controllers
         {
             var id = await _employeesService.CreateAsync(dto);
 
-            return Created($"/api/employee/{id}",null);
+            return Created($"/api/employee/{id}", null);
         }
 
         [HttpPost("save")]
@@ -66,7 +66,7 @@ namespace MTGWebApi.Controllers
         [HttpPut("{id}")]
         public async Task<IActionResult> Update([FromRoute] Guid id, [FromBody] UpdateEmployeeDto dto)
         {
-            await _employeesService.UpdateAsync(id,dto);
+            await _employeesService.UpdateAsync(id, dto);
 
             return Ok();
         }
