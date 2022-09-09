@@ -38,6 +38,7 @@ namespace MTGWebApi.Data
             {
                 arrLine.RemoveAt(lineNumber);
             }
+
             return arrLine.ToArray();
         }
 

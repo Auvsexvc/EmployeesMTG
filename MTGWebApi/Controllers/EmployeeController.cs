@@ -19,14 +19,12 @@ namespace MTGWebApi.Controllers
         public async Task<IActionResult> GetAll(string order = "asc", string searchString = "null", int pageNumber = 1, int pageSize = 0)
         {
             var employeesVMs = await _employeesService.GetAllAsync(order, searchString, pageNumber, pageSize);
-            try
+            if (!employeesVMs.Any())
             {
-                return Ok(employeesVMs);
+                return NoContent();
             }
-            catch (Exception)
-            {
-                return BadRequest("Employees couldnt be loaded.");
-            }
+
+            return Ok(employeesVMs);
         }
 
         [HttpGet("get-changes")]

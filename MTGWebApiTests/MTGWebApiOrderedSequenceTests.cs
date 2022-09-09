@@ -4,6 +4,7 @@ using Microsoft.Extensions.Logging.Abstractions;
 using MTGWebApi.Controllers;
 using MTGWebApi.Data;
 using MTGWebApi.Enums;
+using MTGWebApi.Exceptions;
 using MTGWebApi.Interfaces;
 using MTGWebApi.Models;
 using MTGWebApi.Services;
@@ -52,10 +53,7 @@ namespace MTGWebApiTests
         public async Task DatabaseShouldBeEmptyOnFirstRun()
         {
             IActionResult actionResult = await _employeeController.GetAll();
-            Assert.That(actionResult, Is.TypeOf<OkObjectResult>());
-            List<EmployeeVM>? actionResultData = (actionResult as OkObjectResult)?.Value as List<EmployeeVM>;
-
-            Assert.That(actionResultData, Has.Count.EqualTo(0));
+            Assert.That(actionResult, Is.TypeOf<NoContentResult>());
         }
 
         [Test, Order(3)]
@@ -122,7 +120,7 @@ namespace MTGWebApiTests
         }
 
         [Test, Order(8)]
-        public async Task UpdateWithLeapYearDOBActionTest()
+        public async Task UpdateActionTest()
         {
             var employee = await _employeeService.GetAllAsync("asc", searchString: "Joe", 1, 0);
 
@@ -142,11 +140,13 @@ namespace MTGWebApiTests
             var actionResult = await _employeeController.Update(employee.First().Id, emplUpdateDto);
             Assert.That(actionResult, Is.TypeOf<OkResult>());
 
-            var searchforJoe = (await _employeeService.GetAllAsync("asc", searchString: "Joe", 1, 0)).Count();
-            Assert.That(searchforJoe, Is.EqualTo(0));
+            var searchforJoe = (await _employeeController.GetAll("asc", searchString: "Joe", 1, 0));
+            IEnumerable<EmployeeVM>? searchforJoeData = (searchforJoe as OkObjectResult)?.Value as IEnumerable<EmployeeVM>;
+            Assert.That(searchforJoeData, Is.Null);
 
-            var searchforJane = (await _employeeService.GetAllAsync("asc", searchString: "Jane", 1, 0)).Count();
-            Assert.That(searchforJane, Is.EqualTo(1));
+            var searchforJane = (await _employeeController.GetAll("asc", searchString: "Jane", 1, 0));
+            IEnumerable<EmployeeVM>? searchforJaneData = (searchforJane as OkObjectResult)?.Value as IEnumerable<EmployeeVM>;
+            Assert.That(searchforJaneData!.Count(), Is.EqualTo(1));
         }
 
         [Test, Order(9)]
@@ -356,7 +356,121 @@ namespace MTGWebApiTests
                 Assert.That(actionResultData!.First().Town, Is.EqualTo("Kitty Village"));
             });
         }
+
         [Test, Order(18)]
+        public async Task GetByNotExistentIdShouldRespondWith404()
+        {
+            await Task.Run(() => Assert.That(()=> _employeeController.GetById(Guid.NewGuid()), Throws.TypeOf<NotFoundException>()));
+        }
+
+        [Test, Order(19)]
+        public async Task DeleteByNotExistentIdShouldRespondWith404()
+        {
+            await Task.Run(() => Assert.That(() => _employeeController.Delete(Guid.NewGuid()), Throws.TypeOf<NotFoundException>()));
+        }
+
+        [Test, Order(20)]
+        public async Task UpdateByNotExistentIdShouldRespondWith404()
+        {
+            var emplUpdateDto = new UpdateEmployeeDto()
+            {
+                FirstName = "Bad",
+                LastName = "Habit",
+                StreetName = "Nightmare Street",
+                HouseNumber = "13",
+                PostalCode = "00-213",
+                Town = "HorrorTown",
+                PhoneNumber = "+44543539222",
+                DateOfBirth = DateTime.Parse("1996 - 06 - 06")
+            };
+
+            await Task.Run(() => Assert.That(() => _employeeController.Update(Guid.NewGuid(),emplUpdateDto), Throws.TypeOf<NotFoundException>()));
+        }
+
+        [Test, Order(21)]
+        public async Task Update1Create2Update2Update1Create3Save()
+        {
+            await _employeeController.Cancel();
+
+            IActionResult actionResult1 = await _employeeController.GetAll("asc", searchString: "Jane", 1, 0);
+            IEnumerable<EmployeeVM>? actionResultData1 = (actionResult1 as OkObjectResult)?.Value as IEnumerable<EmployeeVM>;
+
+            var emplUpdateDto1 = new UpdateEmployeeDto()
+            {
+                FirstName = "Jane",
+                LastName = "Smith",
+                StreetName = "Trix Paolo",
+                HouseNumber = "1",
+                PostalCode = "90-213",
+                Town = "BravoVille",
+                PhoneNumber = "+23777666222",
+                DateOfBirth = DateTime.Parse("2012 - 02 - 29")
+            };
+            await _employeeController.Update(actionResultData1!.First().Id, emplUpdateDto1);
+
+            var emplCreateDto2 = new CreateEmployeeDto()
+            {
+                FirstName = "Adam",
+                LastName = "Stevens",
+                StreetName = "Jackson Street",
+                HouseNumber = "190",
+                PostalCode = "00-213",
+                Town = "Hello Town",
+                PhoneNumber = "+48999999222",
+                DateOfBirth = DateTime.Parse("1922 - 01 - 01")
+            };
+            await _employeeController.Create(emplCreateDto2);
+
+            IActionResult actionResult2 = await _employeeController.GetAll("asc", searchString: "Adam", 1, 0);
+            IEnumerable<EmployeeVM>? actionResultData2 = (actionResult2 as OkObjectResult)?.Value as IEnumerable<EmployeeVM>;
+
+            var emplUpdateDto2 = new UpdateEmployeeDto()
+            {
+                FirstName = "Adam",
+                LastName = "Stevens",
+                StreetName = "Round Street",
+                HouseNumber = "1",
+                PostalCode = "00-213",
+                Town = "Little Town",
+                PhoneNumber = "+44543539222",
+                DateOfBirth = DateTime.Parse("1922 - 01 - 01")
+            };
+            await _employeeController.Update(actionResultData2!.First().Id, emplUpdateDto2);
+            emplUpdateDto1.FirstName = "Nina";
+            await _employeeController.Update(actionResultData1!.First().Id, emplUpdateDto1);
+
+            var emplCreateDto3 = new CreateEmployeeDto()
+            {
+                FirstName = "Robert",
+                LastName = "Angel",
+                StreetName = "Simple Street",
+                HouseNumber = "222",
+                PostalCode = "33-213",
+                Town = "MarinaBay",
+                PhoneNumber = "+0909999222",
+                DateOfBirth = DateTime.Parse("1999 - 02 - 01")
+            };
+            await _employeeController.Create(emplCreateDto3);
+
+            var pendingChanges = await _employeeController.GetChanges();
+            IEnumerable<EmployeeVM>? pendingChangesData = (pendingChanges as OkObjectResult)?.Value as IEnumerable<EmployeeVM>;
+            Assert.That(pendingChangesData!.Count(), Is.EqualTo(3));
+
+            var saveChangesResult = await _employeeController.Save();
+            Assert.That(saveChangesResult, Is.TypeOf<OkResult>());
+
+            IActionResult getAllResult = await _employeeController.GetAll();
+            IEnumerable<EmployeeVM>? getAllResultData = (getAllResult as OkObjectResult)?.Value as IEnumerable<EmployeeVM>;
+            Assert.Multiple(() =>
+            {
+                Assert.That(getAllResultData!.Count(), Is.EqualTo(3));
+                Assert.That(getAllResultData!.First(e => e.LastName == "Smith").FirstName, Is.EqualTo("Nina"));
+                Assert.That(getAllResultData!.First(e => e.LastName == "Stevens").Town, Is.EqualTo("Little Town"));
+                Assert.That(getAllResultData!.Select(x=>x.FirstName), Does.Contain("Robert"));
+            });
+        }
+
+        [Test, Order(22)]
         public async Task ClearPendingChangesOnApiShutDown()
         {
             await _appDbInitializer.StopAsync(default);
