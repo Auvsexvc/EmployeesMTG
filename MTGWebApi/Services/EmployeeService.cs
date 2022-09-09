@@ -1,4 +1,5 @@
-﻿using MTGWebApi.Entities;
+﻿using MTGWebApi.Data;
+using MTGWebApi.Entities;
 using MTGWebApi.Enums;
 using MTGWebApi.Exceptions;
 using MTGWebApi.Helper;
@@ -51,6 +52,7 @@ namespace MTGWebApi.Services
 
             if (employee is null)
             {
+                _logger.LogInformation(string.Format(Messages.MSG_NOTFOUND, id));
                 throw new NotFoundException(string.Format(Messages.MSG_NOTFOUND, id));
             }
             employee.State = Operation.Delete;
@@ -60,9 +62,22 @@ namespace MTGWebApi.Services
             _logger.LogInformation(string.Format(Messages.MSG_DELETESTAGED, id));
         }
 
-        public async Task<IEnumerable<EmployeeVM>> GetAllAsync()
+        public async Task<IEnumerable<EmployeeVM>> GetAllAsync(string order, string searchString, int? pageNumber, int pageSize)
         {
             var employees = await _appDbContext.GetEmployeesAsync();
+            if (!string.IsNullOrEmpty(searchString) && searchString != "null")
+            {
+                employees = employees.Where(e => e.GetType().GetProperties().Select(p => p.GetValue(e)!.ToString()!.ToLower()).Any(p => p.Contains(searchString.ToLower())));
+            }
+
+            if (!string.IsNullOrEmpty(order))
+            {
+                employees = order switch
+                {
+                    "desc" => employees.OrderByDescending(p => p.LastName),
+                    _ => employees.OrderBy(p => p.LastName)
+                };
+            }
 
             List<EmployeeVM> employeeVMs = new();
 
@@ -72,7 +87,7 @@ namespace MTGWebApi.Services
                 employeeVMs.Add(employeeVM);
             }
 
-            return employeeVMs;
+            return PaginetedList<EmployeeVM>.Create(employeeVMs.AsQueryable(), pageNumber ?? 1, pageSize == 0 ? employeeVMs.Count : pageSize);
         }
 
         public async Task<EmployeeVM> GetByIdAsync(Guid id)
@@ -82,6 +97,7 @@ namespace MTGWebApi.Services
 
             if (employee is null)
             {
+                _logger.LogInformation(string.Format(Messages.MSG_NOTFOUND, id));
                 throw new NotFoundException(string.Format(Messages.MSG_NOTFOUND, id));
             }
 
@@ -97,6 +113,7 @@ namespace MTGWebApi.Services
 
             if (employee is null)
             {
+                _logger.LogInformation(string.Format(Messages.MSG_NOTFOUND, id));
                 throw new NotFoundException(string.Format(Messages.MSG_NOTFOUND, id));
             }
 
@@ -119,6 +136,7 @@ namespace MTGWebApi.Services
         public async Task SaveChangesAsync()
         {
             var pendingChanges = await _appDbContext.GetStagedChangesAsync();
+
             if (pendingChanges.Any())
             {
                 await _appDbContext.CommitChangesAsync();

@@ -26,20 +26,15 @@ namespace MTGWebApi.Data
 
         public async Task StageDeleteAsync(Employee employee)
         {
-            if (!_appDbFileHandler.DoesFileExists(_tempFullPath))
+            var persistingRecords = await _appDbFileHandler.GetEmployeesFromFileAsync(_dbFullPath);
+            var stagedRecords = await _appDbFileHandler.GetEmployeesFromFileAsync(_tempFullPath);
+
+            if (persistingRecords.Any(x => x.Id == employee.Id) || stagedRecords.Any(x => x.Id == employee.Id))
             {
-                await _appDbFileHandler.CreateFile(_tempFullPath);
+                await _appDbFileHandler.CommitOperationToFile(employee, _tempFullPath);
             }
 
-            if ((await _appDbFileHandler.GetEmployeesFromFileAsync(_tempFullPath)).Any(x => x.Id == employee.Id))
-            {
-                var lines = await File.ReadAllLinesAsync(_tempFullPath);
-                var lineNumbersToDelete = Enumerable.Range(0, lines.Length).Where(x => lines[x].Split(';')[0] == employee.Id.ToString()).ToArray();
-                var newLines = _appDbFileHandler.LineRemover(lines, lineNumbersToDelete);
-                await File.WriteAllLinesAsync(_tempFullPath, newLines);
-            }
-
-            if ((await _appDbFileHandler.GetEmployeesFromFileAsync(_dbFullPath)).Any(x => x.Id == employee.Id))
+            if (persistingRecords.Any(x => x.Id == employee.Id))
             {
                 await _appDbFileHandler.AppendToFile(employee, _tempFullPath);
             }
@@ -47,33 +42,17 @@ namespace MTGWebApi.Data
 
         public async Task StageUpdateAsync(Employee employee)
         {
-            if (!_appDbFileHandler.DoesFileExists(_tempFullPath))
-            {
-                await _appDbFileHandler.CreateFile(_tempFullPath);
-            }
+            var persistingRecords = await _appDbFileHandler.GetEmployeesFromFileAsync(_dbFullPath);
+            var stagedRecords = await _appDbFileHandler.GetEmployeesFromFileAsync(_tempFullPath);
 
-            if ((await _appDbFileHandler.GetEmployeesFromFileAsync(_tempFullPath)).Any(x => x.Id == employee.Id && x.State != Operation.Delete))
+            if (persistingRecords.Any(x => x.Id == employee.Id) || stagedRecords.Any(x => x.Id == employee.Id))
             {
-                var lines = await File.ReadAllLinesAsync(_tempFullPath);
-                var lineNumbersToDelete = Enumerable.Range(0, lines.Length).Where(x => lines[x].Split(';')[0] == employee.Id.ToString() && Enum.Parse<Operation>(lines[x].Split(';')[10]) != Operation.Delete).ToArray();
-                if (lineNumbersToDelete.Any(x => Enum.Parse<Operation>(lines[x].Split(';')[10]) == Operation.Create))
-                {
-                    employee.State = Operation.Create;
-                }
-                var newLines = _appDbFileHandler.LineRemover(lines, lineNumbersToDelete);
-                await File.WriteAllLinesAsync(_tempFullPath, newLines);
+                await _appDbFileHandler.CommitOperationToFile(employee, _tempFullPath);
             }
-
-            await _appDbFileHandler.AppendToFile(employee, _tempFullPath);
         }
 
         public async Task<IEnumerable<Employee>> GetEmployeesAsync()
         {
-            if (!_appDbFileHandler.DoesFileExists(_tempFullPath))
-            {
-                return await _appDbFileHandler.GetEmployeesFromFileAsync(_dbFullPath);
-            }
-
             return await GetEmployeesAccomodateStaged();
         }
 
@@ -81,7 +60,7 @@ namespace MTGWebApi.Data
         {
             if (_appDbFileHandler.DoesFileExists(_tempFullPath))
             {
-                await Task.Factory.StartNew(() => File.Delete(_tempFullPath));
+                await Task.Run(() => File.Delete(_tempFullPath));
             }
         }
 
@@ -99,26 +78,32 @@ namespace MTGWebApi.Data
             }
         }
 
+        public bool CanConnectToDb()
+        {
+            return _appDbFileHandler.DoesFileExists(_dbFullPath);
+        }
+
         private async Task CommitStagedOperationsAsync()
         {
-            var employees = (await _appDbFileHandler.GetEmployeesFromFileAsync(_tempFullPath));
+            var stagedRecords = await _appDbFileHandler.GetEmployeesFromFileAsync(_tempFullPath);
 
-            foreach (var employee in employees)
+            foreach (var employee in stagedRecords)
             {
+                employee.State = Operation.Persist;
                 await _appDbFileHandler.CommitOperationToFile(employee, _dbFullPath);
             }
         }
 
         private async Task<IEnumerable<Employee>> GetEmployeesAccomodateStaged()
         {
-            var dbEmployees = await _appDbFileHandler.GetEmployeesFromFileAsync(_dbFullPath);
-            var tempEmployees = await _appDbFileHandler.GetEmployeesFromFileAsync(_tempFullPath);
+            var persistingRecords = await _appDbFileHandler.GetEmployeesFromFileAsync(_dbFullPath);
+            var stagedRecords = await _appDbFileHandler.GetEmployeesFromFileAsync(_tempFullPath);
 
-            var tempEmployeesFiltered = tempEmployees.Where(e => e.State != Operation.Delete).GroupBy(x => x.Id).Select(g => g.Last());
+            var stagedRecordsFiltered = stagedRecords.Where(e => e.State != Operation.Delete).GroupBy(x => x.Id).Select(g => g.Last());
 
-            var dbEmployeesFiltered = dbEmployees.ExceptBy(tempEmployees.Select(te => te.Id), x => x.Id);
+            var persistingRecordsFiltered = persistingRecords.ExceptBy(stagedRecords.Select(te => te.Id), x => x.Id);
 
-            return dbEmployeesFiltered.Concat(tempEmployeesFiltered);
+            return persistingRecordsFiltered.Concat(stagedRecordsFiltered);
         }
     }
 }

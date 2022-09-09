@@ -16,17 +16,28 @@ namespace MTGWebApi.Controllers
         }
 
         [HttpGet]
-        public async Task<IActionResult> GetAll()
+        public async Task<IActionResult> GetAll(string order = "asc", string searchString = "null", int pageNumber = 1, int pageSize = 0)
         {
-            var employeesVMs = await _employeesService.GetAllAsync();
-
-            return Ok(employeesVMs);
+            var employeesVMs = await _employeesService.GetAllAsync(order, searchString, pageNumber, pageSize);
+            try
+            {
+                return Ok(employeesVMs);
+            }
+            catch (Exception)
+            {
+                return BadRequest("Employees couldnt be loaded.");
+            }
         }
 
         [HttpGet("get-changes")]
         public async Task<IActionResult> GetChanges()
         {
             var employeesVMs = await _employeesService.GetPendingChangesAsync();
+
+            if (!employeesVMs.Any())
+            {
+                return NoContent();
+            }
 
             return Ok(employeesVMs);
         }
@@ -72,9 +83,9 @@ namespace MTGWebApi.Controllers
         }
 
         [HttpDelete("{id}")]
-        public IActionResult Delete([FromRoute] Guid id)
+        public async Task<IActionResult> Delete([FromRoute] Guid id)
         {
-            _employeesService.DeleteAsync(id);
+            await _employeesService.DeleteAsync(id);
 
             return NoContent();
         }

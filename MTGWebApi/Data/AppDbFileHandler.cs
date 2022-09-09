@@ -54,10 +54,19 @@ namespace MTGWebApi.Data
 
         public async Task CommitOperationToFile(Employee employee, string file)
         {
+            if (!DoesFileExists(file))
+            {
+                await CreateFile(file);
+            }
+
             if (employee.State != Operation.Create)
             {
                 var lines = await File.ReadAllLinesAsync(file);
                 var lineNumbersToDelete = Enumerable.Range(0, lines.Length).Where(x => employee.Id.ToString() == lines[x].Split(';')[0]).ToArray();
+                if (employee.State == Operation.Update && lineNumbersToDelete.Any(x => Enum.Parse<Operation>(lines[x].Split(';')[10]) == Operation.Create))
+                {
+                    employee.State = Operation.Create;
+                }
                 var newLines = LineRemover(lines, lineNumbersToDelete);
                 await File.WriteAllLinesAsync(file, newLines);
             }
