@@ -1,46 +1,30 @@
-﻿namespace MTGWebApi.Data
+﻿using MTGWebApi.Interfaces;
+
+namespace MTGWebApi.Data
 {
     public class AppDbInitializer : AppDbContext, IHostedService
     {
-        public AppDbInitializer(IConfiguration configuration) : base(configuration)
+        public AppDbInitializer(IConfiguration configuration, IAppDbFileHandler appDbFileHandler) : base(configuration, appDbFileHandler)
         {
         }
 
         public async Task StartAsync(CancellationToken cancellationToken)
         {
             await Init();
-            await RemoveTempFile();
+            await _appDbFileHandler.DeleteFile(_tempFullPath);
         }
 
         public async Task StopAsync(CancellationToken cancellationToken)
         {
-            await RemoveTempFile();
-        }
-
-        private static bool CheckIfExists(string filePath)
-        {
-            return File.Exists(filePath);
-        }
-
-        private static async Task CreateDbFile(string filePath)
-        {
-            await Task.Run(() =>
-            {
-                using var fileStream = new FileStream(filePath, FileMode.CreateNew);
-            });
+            await _appDbFileHandler.DeleteFile(_tempFullPath);
         }
 
         private async Task Init()
         {
-            if (!CheckIfExists(_dbFullPath))
+            if (!_appDbFileHandler.DoesFileExists(_dbFullPath))
             {
-                await CreateDbFile(_dbFullPath);
+                await _appDbFileHandler.CreateFile(_dbFullPath);
             }
-        }
-
-        private async Task RemoveTempFile()
-        {
-            await Task.Run(() => File.Delete(_tempFullPath));
         }
     }
 }

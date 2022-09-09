@@ -35,9 +35,9 @@ namespace MTGWebApi.Services
                 State = Operation.Create
             };
 
-            await _appDbContext.AddAsync(employee);
+            await _appDbContext.StageAddAsync(employee);
 
-            _logger.LogInformation(string.Format(Messages.MSG_CREATED, employee.Id));
+            _logger.LogInformation(string.Format(Messages.MSG_CREATESTAGED, employee.Id));
 
             return employee.Id;
         }
@@ -55,9 +55,9 @@ namespace MTGWebApi.Services
             }
             employee.State = Operation.Delete;
 
-            await _appDbContext.DeleteAsync(employee);
+            await _appDbContext.StageDeleteAsync(employee);
 
-            _logger.LogInformation(string.Format(Messages.MSG_DELETED, id));
+            _logger.LogInformation(string.Format(Messages.MSG_DELETESTAGED, id));
         }
 
         public async Task<IEnumerable<EmployeeVM>> GetAllAsync()
@@ -111,31 +111,31 @@ namespace MTGWebApi.Services
             employee.DateOfBirth = dto.DateOfBirth;
             employee.State = Operation.Update;
 
-            await _appDbContext.UpdateAsync(employee);
+            await _appDbContext.StageUpdateAsync(employee);
 
-            _logger.LogInformation(string.Format(Messages.MSG_UPDATED, id));
+            _logger.LogInformation(string.Format(Messages.MSG_UPDATESTAGED, id));
         }
 
         public async Task SaveChangesAsync()
         {
-            var pendingChanges = await _appDbContext.PendingChangesAsync();
+            var pendingChanges = await _appDbContext.GetStagedChangesAsync();
             if (pendingChanges.Any())
             {
-                await _appDbContext.SaveChangesAsync();
+                await _appDbContext.CommitChangesAsync();
             }
             _logger.LogInformation(string.Format(Messages.MSG_SAVED, pendingChanges.Count()));
         }
 
         public async Task<IEnumerable<EmployeeVM>> GetPendingChangesAsync()
         {
-            var pendingChanges = await _appDbContext.PendingChangesAsync();
+            var pendingChanges = await _appDbContext.GetStagedChangesAsync();
 
             return pendingChanges.Select(x => MakeEmployeeVM(x));
         }
 
         public async Task CancelChangesAsync()
         {
-            var pendingChanges = await _appDbContext.PendingChangesAsync();
+            var pendingChanges = await _appDbContext.GetStagedChangesAsync();
             await _appDbContext.CancelChangesAsync();
             _logger.LogInformation(string.Format(Messages.MSG_CANCELED, pendingChanges.Count()));
         }

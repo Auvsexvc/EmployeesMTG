@@ -4,12 +4,12 @@ namespace MTGWebApi.Interfaces
 {
     public interface IAppDbContext
     {
-        Task AddAsync(Employee employee);
+        Task StageAddAsync(Employee employee);
         Task CancelChangesAsync();
-        Task DeleteAsync(Employee employee);
+        Task StageDeleteAsync(Employee employee);
         Task<IEnumerable<Employee>> GetEmployeesAsync();
-        Task<IEnumerable<Employee>> PendingChangesAsync();
-        Task SaveChangesAsync();
-        Task UpdateAsync(Employee employee);
+        Task<IEnumerable<Employee>> GetStagedChangesAsync();
+        Task CommitChangesAsync();
+        Task StageUpdateAsync(Employee employee);
     }
 }
