@@ -1,1 +1,3 @@
 # MTG
+
+Complete application (FE and BE) should allow a user to edit the data, add new users and delete existing ones. The data should be persisted on disk - it can be a file or local DB, but the application must be self-contained (no external DB engines or libraries required). Below the table, there should be two buttons: "Save" and "Cancel". When the Save button is pressed changes made by a user should be persisted on disk. Pressing the "Cancel" button discards user changes and causes the table to be refreshed based on persisted already data. The buttons should be active only if the table contains unsaved data. After the first startup of the application, the table should be empty.
