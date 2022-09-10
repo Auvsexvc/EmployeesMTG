@@ -15,34 +15,34 @@
                     <thead>
                         <tr>
                             <th>
-                                @Html.DisplayNameFor(model => model.FirstName)
+                                @Html.ActionLink(@Html.DisplayNameFor(model => model.FirstName), "Index", new {Sorting_Order = ViewBag.SortingFirstName})
                             </th>
                             <th>
-                                @Html.DisplayNameFor(model => model.LastName)
+                                @Html.ActionLink(@Html.DisplayNameFor(model => model.LastName), "Index", new {Sorting_Order = ViewBag.SortingLastName})
                             </th>
                             <th>
-                                @Html.DisplayNameFor(model => model.StreetName)
+                                @Html.ActionLink(@Html.DisplayNameFor(model => model.StreetName), "Index", new {Sorting_Order = ViewBag.SortingStreetName})
                             </th>
                             <th>
-                                @Html.DisplayNameFor(model => model.HouseNumber)
+                                @Html.ActionLink(@Html.DisplayNameFor(model => model.HouseNumber), "Index", new {Sorting_Order = ViewBag.SortingHouseNumber})
                             </th>
                             <th>
-                                @Html.DisplayNameFor(model => model.ApartmentNumber)
+                                @Html.ActionLink(@Html.DisplayNameFor(model => model.ApartmentNumber), "Index", new {Sorting_Order = ViewBag.SortingApartmentNumber})
                             </th>
                             <th>
-                                @Html.DisplayNameFor(model => model.PostalCode)
+                                @Html.ActionLink(@Html.DisplayNameFor(model => model.PostalCode), "Index", new {Sorting_Order = ViewBag.SortingPostalCode})
                             </th>
                             <th>
-                                @Html.DisplayNameFor(model => model.Town)
+                                @Html.ActionLink(@Html.DisplayNameFor(model => model.Town), "Index", new {Sorting_Order = ViewBag.SortingTown})
                             </th>
                             <th>
-                                @Html.DisplayNameFor(model => model.PhoneNumber)
+                                @Html.ActionLink(@Html.DisplayNameFor(model => model.PhoneNumber), "Index", new {Sorting_Order = ViewBag.SortingPhoneNumber})
                             </th>
                             <th>
-                                @Html.DisplayNameFor(model => model.DateOfBirth)
+                                @Html.ActionLink(@Html.DisplayNameFor(model => model.DateOfBirth), "Index", new {Sorting_Order = ViewBag.SortingDateOfBirth})
                             </th>
                             <th>
-                                @Html.DisplayNameFor(model => model.Age)
+                                @Html.ActionLink(@Html.DisplayNameFor(model => model.Age), "Index", new {Sorting_Order = ViewBag.SortingAge})
                             </th>
                             <th>Actions</th>
                         </tr>
