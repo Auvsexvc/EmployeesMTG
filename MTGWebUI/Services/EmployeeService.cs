@@ -32,7 +32,7 @@ namespace MTGWebUI.Services
                 }
             }
 
-            return employees;
+            return employees!;
         }
 
         public async Task<EmployeeVM> GetEmployeeByIdAsync(Guid id)
@@ -48,13 +48,9 @@ namespace MTGWebUI.Services
                 {
                     employee = await result.Content.ReadFromJsonAsync<EmployeeVM>();
                 }
-                //else
-                //{
-                //    throw new NotFoundException();
-                //}
             }
 
-            return employee;
+            return employee!;
         }
 
         public async Task<HttpResponseMessage> AddEmployeeAsync(CreateEmployeeDto createEmployeeDto)
@@ -86,7 +82,7 @@ namespace MTGWebUI.Services
                 }
             }
 
-            return employees;
+            return employees!;
         }
 
         public async Task<HttpResponseMessage> EditEmployeeAsync(Guid id, UpdateEmployeeDto updateEmployeeDto)

@@ -13,7 +13,7 @@ namespace MTGWebUI.Controllers
             _employeeService = employeeService;
         }
 
-        public async Task<IActionResult> Index(string sortingOrder)
+        public async Task<IActionResult> Index(string? sortingOrder)
         {
             var employees = await _employeeService.GetEmployeesAsync();
             var pendingChanges = await _employeeService.GetPendingChanges();
@@ -23,7 +23,23 @@ namespace MTGWebUI.Controllers
                 ViewBag.Pending = "disabled";
             }
 
-            ViewBag.SortingFirstName = String.IsNullOrEmpty(sortingOrder) ? "FirstNameDesc" : "";
+            if (sortingOrder != null)
+            {
+                HttpContext.Session.SetString("sortingOrder", sortingOrder);
+            }
+            else
+            {
+                if (HttpContext.Session.GetString("sortingOrder") != null)
+                {
+                    sortingOrder = HttpContext.Session.GetString("sortingOrder");
+                }
+                else
+                {
+                    sortingOrder = "FirstName";
+                }
+            }
+
+            ViewBag.SortingFirstName = sortingOrder == "FirstName" ? "FirstNameDesc" : "FirstName";
             ViewBag.SortingLastName = sortingOrder == "LastName" ? "LastNameDesc" : "LastName";
             ViewBag.SortingStreetName = sortingOrder == "StreetName" ? "StreetNameDesc" : "StreetName";
             ViewBag.SortingHouseNumber = sortingOrder == "HouseNumber" ? "HouseNumberDesc" : "HouseNumber";
@@ -36,6 +52,7 @@ namespace MTGWebUI.Controllers
 
             employees = sortingOrder switch
             {
+                "FirstName" => employees.OrderBy(e => e.FirstName),
                 "FirstNameDesc" => employees.OrderByDescending(e => e.FirstName),
                 "LastName" => employees.OrderBy(e => e.LastName),
                 "LastNameDesc" => employees.OrderByDescending(e => e.LastName),
@@ -57,7 +74,6 @@ namespace MTGWebUI.Controllers
                 "AgeDesc" => employees.OrderByDescending(e => e.Age),
                 _ => employees.OrderBy(e => e.FirstName),
             };
-
 
             return View(employees);
         }
@@ -114,7 +130,7 @@ namespace MTGWebUI.Controllers
         public async Task<IActionResult> Pending()
         {
             var employeesPending = await _employeeService.GetPendingChanges();
-            if(!employeesPending.Any())
+            if (!employeesPending.Any())
             {
                 return RedirectToAction("Index");
             }
