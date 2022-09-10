@@ -5,7 +5,9 @@ VisualStudioVersion = 17.2.32630.192
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MTGWebApi", "MTGWebApi\MTGWebApi.csproj", "{4B732C40-6429-4DC3-B040-EA227B6E866F}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MTGWebApiTests", "MTGWebApiTests\MTGWebApiTests.csproj", "{BFB0F6F8-413A-4459-9365-7A662E25E75C}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MTGWebApiTests", "MTGWebApiTests\MTGWebApiTests.csproj", "{BFB0F6F8-413A-4459-9365-7A662E25E75C}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MTGWebUI", "MTGWebUI\MTGWebUI.csproj", "{68815E16-9608-4C0E-B0B1-5F00CF7555CA}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -21,6 +23,10 @@ Global
 		{BFB0F6F8-413A-4459-9365-7A662E25E75C}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{BFB0F6F8-413A-4459-9365-7A662E25E75C}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{BFB0F6F8-413A-4459-9365-7A662E25E75C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{68815E16-9608-4C0E-B0B1-5F00CF7555CA}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{68815E16-9608-4C0E-B0B1-5F00CF7555CA}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{68815E16-9608-4C0E-B0B1-5F00CF7555CA}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{68815E16-9608-4C0E-B0B1-5F00CF7555CA}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

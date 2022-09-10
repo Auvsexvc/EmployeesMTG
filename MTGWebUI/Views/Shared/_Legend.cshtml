@@ -1,0 +1,17 @@
+﻿@model IEnumerable<MTGWebUI.Models.EmployeeVM>
+<div id="Legend" class="row">
+    <table class="border-0" style="width:auto">
+        <tbody>
+            <tr>
+            @if (!Model.All(m => m.State == 0))
+            {
+                <td>Color legend:</td>
+            }
+            @foreach (var operation in Model.Where(m=>m.State!= 0).Select(m=>m.State).Distinct().OrderBy(s=>s))
+            {
+                <td style="white-space: nowrap;"><span class="@operation">&nbsp;</span> - @operation.GetDisplayName()</td>
+            }
+            </tr>
+        </tbody>
+    </table>
+</div>
