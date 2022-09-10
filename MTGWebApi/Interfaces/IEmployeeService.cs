@@ -9,7 +9,7 @@ namespace MTGWebApi.Interfaces
 
         Task DeleteAsync(Guid id);
 
-        Task<IEnumerable<EmployeeVM>> GetAllAsync(string sortBy, string searchString, int? pageNumber, int pageSize);
+        Task<IEnumerable<EmployeeVM>> GetAllAsync(string order, string searchString, int? pageNumber, int pageSize);
 
         Task<EmployeeVM> GetByIdAsync(Guid id);
 
