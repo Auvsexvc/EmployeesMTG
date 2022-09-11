@@ -113,7 +113,13 @@ namespace MTGWebUI.Controllers
 
             if (!string.IsNullOrEmpty(searchString))
             {
-                var filteredResult = employeesPending.Where(e => e.GetType().GetProperties().Where(p => p.Name != "Id" && p.Name != "State").Select(p => p.GetValue(e)!.ToString()!.ToLower()).Any(p => p.Contains(searchString.ToLower())));
+                var filteredResult = employeesPending
+                    .Where(e => e
+                        .GetType()
+                        .GetProperties()
+                        .Where(p => p.Name != "Id" && p.Name != "State")
+                        .Select(p => p.GetValue(e)!.ToString()!.ToLower())
+                        .Any(p => p.Contains(searchString.ToLower())));
                 ViewBag.SearchString = searchString;
 
                 return View(filteredResult);
@@ -152,7 +158,12 @@ namespace MTGWebUI.Controllers
 
             if (!string.IsNullOrEmpty(searchString))
             {
-                var filteredResult = employees.Where(e => e.GetType().GetProperties().Select(p => p.GetValue(e)!.ToString()!.ToLower()).Any(p => p.Contains(searchString.ToLower())));
+                var filteredResult = employees
+                    .Where(e => e
+                        .GetType()
+                        .GetProperties()
+                        .Select(p => p.GetValue(e)!.ToString()!.ToLower())
+                        .Any(p => p.Contains(searchString.ToLower())));
                 ViewBag.SearchString = searchString;
 
                 return View("Index", filteredResult);
@@ -161,32 +172,22 @@ namespace MTGWebUI.Controllers
             return View("Index", employees);
         }
 
-        private static IEnumerable<EmployeeVM> SortEmployeesByPropertyName(IEnumerable<EmployeeVM> employees, string propName)
+        private static IEnumerable<EmployeeVM> SortEmployeesByPropertyName(IEnumerable<EmployeeVM> employees, string sortingOrder)
         {
-            return propName switch
+            var propName = string.Concat(sortingOrder.TakeLast(4)) == "Desc" && sortingOrder.Length > 4 ? string.Concat(sortingOrder.SkipLast(4)) : sortingOrder;
+            var item = Array.Find(new EmployeeVM().GetType().GetProperties(), p => p.Name == propName);
+
+            if (item == null)
             {
-                "FirstName" => employees.OrderBy(e => e.FirstName),
-                "FirstNameDesc" => employees.OrderByDescending(e => e.FirstName),
-                "LastName" => employees.OrderBy(e => e.LastName),
-                "LastNameDesc" => employees.OrderByDescending(e => e.LastName),
-                "StreetName" => employees.OrderBy(e => e.StreetName),
-                "StreetNameDesc" => employees.OrderByDescending(e => e.StreetName),
-                "HouseNumber" => employees.OrderBy(e => e.HouseNumber),
-                "HouseNumberDesc" => employees.OrderByDescending(e => e.HouseNumber),
-                "ApartmentNumber" => employees.OrderBy(e => e.ApartmentNumber),
-                "ApartmentNumberDesc" => employees.OrderByDescending(e => e.ApartmentNumber),
-                "PostalCode" => employees.OrderBy(e => e.PostalCode),
-                "PostalCodeDesc" => employees.OrderByDescending(e => e.PostalCode),
-                "Town" => employees.OrderBy(e => e.Town),
-                "TownDesc" => employees.OrderByDescending(e => e.Town),
-                "PhoneNumber" => employees.OrderBy(e => e.PhoneNumber),
-                "PhoneNumberDesc" => employees.OrderByDescending(e => e.PhoneNumber),
-                "DateOfBirth" => employees.OrderBy(e => e.DateOfBirth),
-                "DateOfBirthDesc" => employees.OrderByDescending(e => e.DateOfBirth),
-                "Age" => employees.OrderBy(e => e.Age),
-                "AgeDesc" => employees.OrderByDescending(e => e.Age),
-                _ => employees.OrderBy(e => e.FirstName),
-            };
+                return employees;
+            }
+
+            if (string.Concat(sortingOrder.TakeLast(4)) == "Desc" && sortingOrder.Length > 4)
+            {
+                return employees.OrderByDescending(e => item.GetValue(e));
+            }
+
+            return employees.OrderBy(e => item.GetValue(e));
         }
 
         private string? SessionHandlerForSearching(string? searchString)
