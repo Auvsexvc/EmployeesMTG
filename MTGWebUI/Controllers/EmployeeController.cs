@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using MTGWebUI.Interfaces;
 using MTGWebUI.Models;
+using System.Reflection;
 
 namespace MTGWebUI.Controllers
 {
@@ -26,7 +27,9 @@ namespace MTGWebUI.Controllers
                 ViewBag.Pending = "disabled";
             }
 
-            foreach (var item in new EmployeeVM().GetType().GetProperties().Where(p => p.Name != "Id" && p.Name != "State").Select(p => p.Name))
+            var displayProps = GetDisplayPropertiesForEmployeeVM();
+
+            foreach (var item in displayProps.Select(p => p.Name))
             {
                 ViewData[item] = sortingOrder == item ? item + "Desc" : item;
             }
@@ -35,7 +38,7 @@ namespace MTGWebUI.Controllers
 
             if (!string.IsNullOrEmpty(searchString))
             {
-                var filteredResult = employees.Where(e => e.GetType().GetProperties().Where(p => p.Name != "Id" && p.Name != "State").Select(p => p.GetValue(e)!.ToString()!.ToLower()).Any(p => p.Contains(searchString.ToLower())));
+                var filteredResult = employees.Where(e => displayProps.Select(p => p.GetValue(e)!.ToString()!.ToLower()).Any(p => p.Contains(searchString.ToLower())));
                 ViewBag.SearchString = searchString;
 
                 return View(filteredResult);
@@ -104,7 +107,9 @@ namespace MTGWebUI.Controllers
             sortingOrder = SessionHandlerForSorting(sortingOrder);
             searchString = SessionHandlerForSearching(searchString);
 
-            foreach (var item in new EmployeeVM().GetType().GetProperties().Where(p => p.Name != "Id" && p.Name != "State").Select(p => p.Name))
+            var displayProps = GetDisplayPropertiesForEmployeeVM();
+
+            foreach (var item in displayProps.Select(p => p.Name))
             {
                 ViewData[item] = sortingOrder == item ? item + "Desc" : item;
             }
@@ -114,12 +119,7 @@ namespace MTGWebUI.Controllers
             if (!string.IsNullOrEmpty(searchString))
             {
                 var filteredResult = employeesPending
-                    .Where(e => e
-                        .GetType()
-                        .GetProperties()
-                        .Where(p => p.Name != "Id" && p.Name != "State")
-                        .Select(p => p.GetValue(e)!.ToString()!.ToLower())
-                        .Any(p => p.Contains(searchString.ToLower())));
+                    .Where(e => displayProps.Select(p => p.GetValue(e)!.ToString()!.ToLower()).Any(p => p.Contains(searchString.ToLower())));
                 ViewBag.SearchString = searchString;
 
                 return View(filteredResult);
@@ -146,36 +146,10 @@ namespace MTGWebUI.Controllers
             return RedirectToAction("Index");
         }
 
-        public async Task<IActionResult> Filter(string searchString)
-        {
-            var employees = await _employeeService.GetEmployeesAsync();
-            var pendingChanges = await _employeeService.GetPendingChangesAsync();
-
-            if (!pendingChanges.Any())
-            {
-                ViewBag.Pending = "disabled";
-            }
-
-            if (!string.IsNullOrEmpty(searchString))
-            {
-                var filteredResult = employees
-                    .Where(e => e
-                        .GetType()
-                        .GetProperties()
-                        .Select(p => p.GetValue(e)!.ToString()!.ToLower())
-                        .Any(p => p.Contains(searchString.ToLower())));
-                ViewBag.SearchString = searchString;
-
-                return View("Index", filteredResult);
-            }
-
-            return View("Index", employees);
-        }
-
         private static IEnumerable<EmployeeVM> SortEmployeesByPropertyName(IEnumerable<EmployeeVM> employees, string sortingOrder)
         {
             var propName = string.Concat(sortingOrder.TakeLast(4)) == "Desc" && sortingOrder.Length > 4 ? string.Concat(sortingOrder.SkipLast(4)) : sortingOrder;
-            var item = Array.Find(new EmployeeVM().GetType().GetProperties(), p => p.Name == propName);
+            var item = GetDisplayPropertiesForEmployeeVM().FirstOrDefault(p => p.Name == propName);
 
             if (item == null)
             {
@@ -246,6 +220,11 @@ namespace MTGWebUI.Controllers
             }
 
             return View(employeeDetails);
+        }
+
+        private static IEnumerable<PropertyInfo> GetDisplayPropertiesForEmployeeVM()
+        {
+            return new EmployeeVM().GetType().GetProperties().Where(p => p.Name != "Id" && p.Name != "State");
         }
     }
 }
