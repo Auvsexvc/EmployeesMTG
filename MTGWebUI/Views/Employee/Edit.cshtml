@@ -71,7 +71,14 @@
                     </div>
                     <div class="form-group mt-2">
                         <input id="Update" type="submit" value="Update" class="btn btn-warning" disabled/>
-                        <a class="btn btn-outline-secondary float-end" asp-action="Index">Back to List</a>
+                        @if (!string.IsNullOrWhiteSpace(ViewData["Reffer"]!.ToString()))
+                        {
+                            <a id="Cancel" class="btn btn-outline-secondary float-end" href="@ViewData["Reffer"]">Cancel</a>
+                        }
+                        else
+                        {
+                            <a id="Cancel" class="btn btn-outline-secondary float-end" asp-action="Index">Back to List</a>
+                        }
                     </div>
                 </form>
             </div>
@@ -86,6 +93,7 @@
         $(':input').change(
             function(){
                $("#Update").prop("disabled",false);
+               $("#Cancel").prop("class","btn btn-outline-danger float-end");
             }
         );
     </script>

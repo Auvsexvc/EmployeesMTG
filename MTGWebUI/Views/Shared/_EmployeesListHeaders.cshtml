@@ -1,0 +1,31 @@
+﻿@model IEnumerable<MTGWebUI.Models.EmployeeVM>
+<th>
+    @Html.ActionLink(@Html.DisplayNameFor(model => model.FirstName), @ViewData["Title"]!.ToString(), new {sortingOrder = ViewData["FirstName"]})
+</th>
+<th>
+    @Html.ActionLink(@Html.DisplayNameFor(model => model.LastName), ViewData["Title"]!.ToString(), new {sortingOrder = ViewData["LastName"]})
+</th>
+<th>
+    @Html.ActionLink(@Html.DisplayNameFor(model => model.StreetName), ViewData["Title"]!.ToString(), new {sortingOrder = ViewData["StreetName"]})
+</th>
+<th>
+    @Html.ActionLink(@Html.DisplayNameFor(model => model.HouseNumber), ViewData["Title"]!.ToString(), new {sortingOrder = ViewData["HouseNumber"]})
+</th>
+<th>
+    @Html.ActionLink(@Html.DisplayNameFor(model => model.ApartmentNumber), ViewData["Title"]!.ToString(), new {sortingOrder = ViewData["ApartmentNumber"]})
+</th>
+<th>
+    @Html.ActionLink(@Html.DisplayNameFor(model => model.PostalCode), ViewData["Title"]!.ToString(), new {sortingOrder = ViewData["PostalCode"]})
+</th>
+<th>
+    @Html.ActionLink(@Html.DisplayNameFor(model => model.Town), ViewData["Title"]!.ToString(), new {sortingOrder = ViewData["Town"]})
+</th>
+<th>
+    @Html.ActionLink(@Html.DisplayNameFor(model => model.PhoneNumber), ViewData["Title"]!.ToString(), new {sortingOrder = ViewData["PhoneNumber"]})
+</th>
+<th>
+    @Html.ActionLink(@Html.DisplayNameFor(model => model.DateOfBirth), ViewData["Title"]!.ToString(), new {sortingOrder = ViewData["DateOfBirth"]})
+</th>
+<th>
+    @Html.ActionLink(@Html.DisplayNameFor(model => model.Age), ViewData["Title"]!.ToString(), new {sortingOrder = ViewData["Age"]})
+</th>

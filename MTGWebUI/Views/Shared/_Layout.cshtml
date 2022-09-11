@@ -18,13 +18,25 @@
                     <span class="navbar-toggler-icon"></span>
                 </button>
                 <div class="navbar-collapse collapse d-sm-inline-flex justify-content-between" style="display: block !important;">
-                    <div class="float-end">
-                    <form class="form-inline my-2 my-lg-0 d-flex" asp-controller="Employee" asp-action="Filter" style="padding-right: 25px;">
-                        @Html.AntiForgeryToken()
-                        <input name="searchString" value="@ViewBag.SearchString" type="text" class="form-control" placeholder="Search for a..." aria-label="" aria-describedby="button-addon2">
-                        <button class="btn btn-outline-success my-2 my-sm-0" type="submit">Search</button>
-                    </form>
-                    </div>
+                    @if(@ViewData["Title"] == "Index" || @ViewData["Title"] == "Pending")
+                    {
+                        <div class="float-end">
+                            <form class="form-inline my-2 my-lg-0 d-flex" asp-controller="Employee" asp-action="@ViewData["Title"]" style="padding-right: 25px;">
+                                @Html.AntiForgeryToken()
+                                    @if (!string.IsNullOrEmpty(ViewBag.SearchString))
+                                    {
+                                        <input name="searchString" value="@ViewBag.SearchString" type="text" class="form-control" style="background-color:#fde7e7;" placeholder="Search for a..." aria-label="" aria-describedby="button-addon2">
+                                        <button class="btn btn-danger my-2 my-sm-0" type="submit">Search</button>
+                                    }
+                                    else
+                                    {
+                                        <input name="searchString" value="@ViewBag.SearchString" type="text" class="form-control" placeholder="Search for a..." aria-label="" aria-describedby="button-addon2">
+                                        <button class="btn btn-outline-dark my-2 my-sm-0" type="submit">Search</button>
+
+                                    }
+                            </form>
+                        </div>
+                    }
                 </div>
             </div>
         </nav>
@@ -35,8 +47,8 @@
         </main>
     </div>
 
-    <footer class="border-top footer text-muted">
-        <div class="container">
+    <footer class="border-top footer text-muted" style="position:fixed !important; background-color: #060606a3; z-index:auto;">
+        <div class="container text-white">
             &copy; 2022 - MTGWebUI
         </div>
     </footer>

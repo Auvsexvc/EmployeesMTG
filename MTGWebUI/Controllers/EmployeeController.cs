@@ -13,67 +13,35 @@ namespace MTGWebUI.Controllers
             _employeeService = employeeService;
         }
 
-        public async Task<IActionResult> Index(string? sortingOrder)
+        public async Task<IActionResult> Index(string? sortingOrder, string? searchString = "")
         {
-            var employees = await _employeeService.GetEmployeesAsync();
-            var pendingChanges = await _employeeService.GetPendingChanges();
+            sortingOrder = SessionHandlerForSorting(sortingOrder);
+            searchString = SessionHandlerForSearching(searchString);
 
-            if (!pendingChanges.Any())
+            var employees = await _employeeService.GetEmployeesAsync();
+            var areTherePendingChanges = await _employeeService.AreTherePendingChanges();
+
+            if (!areTherePendingChanges)
             {
                 ViewBag.Pending = "disabled";
             }
 
-            if (sortingOrder != null)
+
+            foreach (var item in new EmployeeVM().GetType().GetProperties().Where(p => p.Name != "Id" && p.Name != "State").Select(p => p.Name))
             {
-                HttpContext.Session.SetString("sortingOrder", sortingOrder);
-            }
-            else
-            {
-                if (HttpContext.Session.GetString("sortingOrder") != null)
-                {
-                    sortingOrder = HttpContext.Session.GetString("sortingOrder");
-                }
-                else
-                {
-                    sortingOrder = "FirstName";
-                }
+                ViewData[item] = sortingOrder == item ? item + "Desc" : item;
             }
 
-            ViewBag.SortingFirstName = sortingOrder == "FirstName" ? "FirstNameDesc" : "FirstName";
-            ViewBag.SortingLastName = sortingOrder == "LastName" ? "LastNameDesc" : "LastName";
-            ViewBag.SortingStreetName = sortingOrder == "StreetName" ? "StreetNameDesc" : "StreetName";
-            ViewBag.SortingHouseNumber = sortingOrder == "HouseNumber" ? "HouseNumberDesc" : "HouseNumber";
-            ViewBag.SortingApartmentNumber = sortingOrder == "ApartmentNumber" ? "ApartmentNumberDesc" : "ApartmentNumber";
-            ViewBag.SortingPostalCode = sortingOrder == "PostalCode" ? "PostalCodeDesc" : "PostalCode";
-            ViewBag.SortingTown = sortingOrder == "Town" ? "TownDesc" : "Town";
-            ViewBag.SortingPhoneNumber = sortingOrder == "PhoneNumber" ? "PhoneNumberDesc" : "Town";
-            ViewBag.SortingDateOfBirth = sortingOrder == "DateOfBirth" ? "DateOfBirthDesc" : "DateOfBirth";
-            ViewBag.SortingAge = sortingOrder == "Age" ? "AgeDesc" : "Age";
+            employees = SortEmployeesByPropertyName(employees, sortingOrder);
 
-            employees = sortingOrder switch
+
+            if (!string.IsNullOrEmpty(searchString))
             {
-                "FirstName" => employees.OrderBy(e => e.FirstName),
-                "FirstNameDesc" => employees.OrderByDescending(e => e.FirstName),
-                "LastName" => employees.OrderBy(e => e.LastName),
-                "LastNameDesc" => employees.OrderByDescending(e => e.LastName),
-                "StreetName" => employees.OrderBy(e => e.StreetName),
-                "StreetNameDesc" => employees.OrderByDescending(e => e.StreetName),
-                "HouseNumber" => employees.OrderBy(e => e.HouseNumber),
-                "HouseNumberDesc" => employees.OrderByDescending(e => e.HouseNumber),
-                "ApartmentNumber" => employees.OrderBy(e => e.ApartmentNumber),
-                "ApartmentNumberDesc" => employees.OrderByDescending(e => e.ApartmentNumber),
-                "PostalCode" => employees.OrderBy(e => e.PostalCode),
-                "PostalCodeDesc" => employees.OrderByDescending(e => e.PostalCode),
-                "Town" => employees.OrderBy(e => e.Town),
-                "TownDesc" => employees.OrderByDescending(e => e.Town),
-                "PhoneNumber" => employees.OrderBy(e => e.PhoneNumber),
-                "PhoneNumberDesc" => employees.OrderByDescending(e => e.PhoneNumber),
-                "DateOfBirth" => employees.OrderBy(e => e.DateOfBirth),
-                "DateOfBirthDesc" => employees.OrderByDescending(e => e.DateOfBirth),
-                "Age" => employees.OrderBy(e => e.Age),
-                "AgeDesc" => employees.OrderByDescending(e => e.Age),
-                _ => employees.OrderBy(e => e.FirstName),
-            };
+                var filteredResult = employees.Where(e => e.GetType().GetProperties().Where(p => p.Name != "Id" && p.Name != "State").Select(p => p.GetValue(e)!.ToString()!.ToLower()).Any(p => p.Contains(searchString.ToLower())));
+                ViewBag.SearchString = searchString;
+
+                return View(filteredResult);
+            }
 
             return View(employees);
         }
@@ -127,12 +95,31 @@ namespace MTGWebUI.Controllers
             return RedirectToAction("Index");
         }
 
-        public async Task<IActionResult> Pending()
+        public async Task<IActionResult> Pending(string? sortingOrder, string? searchString = "")
         {
-            var employeesPending = await _employeeService.GetPendingChanges();
+
+            var employeesPending = await _employeeService.GetPendingChangesAsync();
             if (!employeesPending.Any())
             {
                 return RedirectToAction("Index");
+            }
+
+            sortingOrder = SessionHandlerForSorting(sortingOrder);
+            searchString = SessionHandlerForSearching(searchString);
+
+            foreach (var item in new EmployeeVM().GetType().GetProperties().Where(p => p.Name != "Id" && p.Name != "State").Select(p => p.Name))
+            {
+                ViewData[item] = sortingOrder == item ? item + "Desc" : item;
+            }
+
+            employeesPending = SortEmployeesByPropertyName(employeesPending, sortingOrder);
+
+            if (!string.IsNullOrEmpty(searchString))
+            {
+                var filteredResult = employeesPending.Where(e => e.GetType().GetProperties().Where(p => p.Name != "Id" && p.Name != "State").Select(p => p.GetValue(e)!.ToString()!.ToLower()).Any(p => p.Contains(searchString.ToLower())));
+                ViewBag.SearchString = searchString;
+
+                return View(filteredResult);
             }
 
             return View(employeesPending);
@@ -142,7 +129,7 @@ namespace MTGWebUI.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Save()
         {
-            await _employeeService.Save();
+            await _employeeService.SaveAsync();
 
             return RedirectToAction("Index");
         }
@@ -151,7 +138,7 @@ namespace MTGWebUI.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Cancel()
         {
-            await _employeeService.Cancel();
+            await _employeeService.CancelAsync();
 
             return RedirectToAction("Index");
         }
@@ -159,12 +146,13 @@ namespace MTGWebUI.Controllers
         public async Task<IActionResult> Filter(string searchString)
         {
             var employees = await _employeeService.GetEmployeesAsync();
-            var pendingChanges = await _employeeService.GetPendingChanges();
+            var pendingChanges = await _employeeService.GetPendingChangesAsync();
 
             if (!pendingChanges.Any())
             {
                 ViewBag.Pending = "disabled";
             }
+
             if (!string.IsNullOrEmpty(searchString))
             {
                 var filteredResult = employees.Where(e => e.GetType().GetProperties().Select(p => p.GetValue(e)!.ToString()!.ToLower()).Any(p => p.Contains(searchString.ToLower())));
@@ -174,6 +162,47 @@ namespace MTGWebUI.Controllers
             }
 
             return View("Index", employees);
+        }
+
+        private string? SessionHandlerForSearching(string? searchString)
+        {
+            if (searchString == null)
+            {
+                HttpContext.Session.SetString("searchString", "");
+                searchString = "";
+            }
+            else if (searchString != "")
+            {
+                HttpContext.Session.SetString("searchString", searchString);
+            }
+            else
+            {
+                if (!string.IsNullOrEmpty(HttpContext.Session.GetString("searchString")))
+                {
+                    searchString = HttpContext.Session.GetString("searchString");
+                }
+                else
+                {
+                    HttpContext.Session.SetString("searchString", String.Empty);
+                    searchString = String.Empty;
+                }
+            }
+
+            return searchString;
+        }
+
+        private string SessionHandlerForSorting(string? sortingOrder)
+        {
+            if (sortingOrder != null)
+            {
+                HttpContext.Session.SetString("sortingOrder", sortingOrder);
+            }
+            else
+            {
+                sortingOrder = HttpContext.Session.GetString("sortingOrder") ?? "FirstName";
+            }
+
+            return sortingOrder;
         }
 
         private async Task<IActionResult> GetEmployeeAsync(Guid id)
@@ -191,6 +220,36 @@ namespace MTGWebUI.Controllers
             }
 
             return View(employeeDetails);
+        }
+
+        private IEnumerable<EmployeeVM> SortEmployeesByPropertyName(IEnumerable<EmployeeVM> employees, string propName)
+        {
+            employees = propName switch
+            {
+                "FirstName" => employees.OrderBy(e => e.FirstName),
+                "FirstNameDesc" => employees.OrderByDescending(e => e.FirstName),
+                "LastName" => employees.OrderBy(e => e.LastName),
+                "LastNameDesc" => employees.OrderByDescending(e => e.LastName),
+                "StreetName" => employees.OrderBy(e => e.StreetName),
+                "StreetNameDesc" => employees.OrderByDescending(e => e.StreetName),
+                "HouseNumber" => employees.OrderBy(e => e.HouseNumber),
+                "HouseNumberDesc" => employees.OrderByDescending(e => e.HouseNumber),
+                "ApartmentNumber" => employees.OrderBy(e => e.ApartmentNumber),
+                "ApartmentNumberDesc" => employees.OrderByDescending(e => e.ApartmentNumber),
+                "PostalCode" => employees.OrderBy(e => e.PostalCode),
+                "PostalCodeDesc" => employees.OrderByDescending(e => e.PostalCode),
+                "Town" => employees.OrderBy(e => e.Town),
+                "TownDesc" => employees.OrderByDescending(e => e.Town),
+                "PhoneNumber" => employees.OrderBy(e => e.PhoneNumber),
+                "PhoneNumberDesc" => employees.OrderByDescending(e => e.PhoneNumber),
+                "DateOfBirth" => employees.OrderBy(e => e.DateOfBirth),
+                "DateOfBirthDesc" => employees.OrderByDescending(e => e.DateOfBirth),
+                "Age" => employees.OrderBy(e => e.Age),
+                "AgeDesc" => employees.OrderByDescending(e => e.Age),
+                _ => employees.OrderBy(e => e.FirstName),
+            };
+
+            return employees;
         }
     }
 }

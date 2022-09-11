@@ -1,4 +1,5 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using MTGWebUI.Helper;
+using System.ComponentModel.DataAnnotations;
 
 namespace MTGWebUI.Models
 {
@@ -29,6 +30,7 @@ namespace MTGWebUI.Models
         public string PhoneNumber { get; set; } = string.Empty;
 
         [Required]
+        [DateMustNotBeFuture]
         public DateTime DateOfBirth { get; set; }
     }
 }

@@ -1,4 +1,5 @@
 ﻿using MTGWebUI.Enums;
+using MTGWebUI.Helper;
 using System.ComponentModel.DataAnnotations;
 
 namespace MTGWebUI.Models
@@ -32,9 +33,11 @@ namespace MTGWebUI.Models
         public string PhoneNumber { get; set; } = string.Empty;
 
         [Display(Name = "Date of Birth")]
+
         public DateTime DateOfBirth { get; set; }
 
         [Display(Name = "Age")]
+        [DateMustNotBeFutureAttribute(ErrorMessage = "Cant be futere date")]
         public int Age { get; set; }
 
         public Operation State { get; set; }

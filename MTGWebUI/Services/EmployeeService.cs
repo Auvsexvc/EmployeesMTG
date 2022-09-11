@@ -63,7 +63,7 @@ namespace MTGWebUI.Services
             return result;
         }
 
-        public async Task<IEnumerable<EmployeeVM>> GetPendingChanges()
+        public async Task<IEnumerable<EmployeeVM>> GetPendingChangesAsync()
         {
             IEnumerable<EmployeeVM>? employees = null;
 
@@ -72,7 +72,7 @@ namespace MTGWebUI.Services
                 client.BaseAddress = new Uri(_configuration.GetConnectionString("DefaultConnection"));
                 var result = await client.GetAsync("Employee/get-changes");
 
-                if (result.StatusCode==System.Net.HttpStatusCode.OK)
+                if (result.StatusCode == System.Net.HttpStatusCode.OK)
                 {
                     employees = await result.Content.ReadFromJsonAsync<IList<EmployeeVM>>();
                 }
@@ -95,7 +95,7 @@ namespace MTGWebUI.Services
             return result;
         }
 
-        public async Task<HttpResponseMessage> Save()
+        public async Task<HttpResponseMessage> SaveAsync()
         {
             using var client = new HttpClient();
             client.BaseAddress = new Uri(_configuration.GetConnectionString("DefaultConnection"));
@@ -105,7 +105,7 @@ namespace MTGWebUI.Services
             return result;
         }
 
-        public async Task<HttpResponseMessage> Cancel()
+        public async Task<HttpResponseMessage> CancelAsync()
         {
             using var client = new HttpClient();
             client.BaseAddress = new Uri(_configuration.GetConnectionString("DefaultConnection"));
@@ -123,6 +123,13 @@ namespace MTGWebUI.Services
             var result = await client.DeleteAsync($"Employee/{id}");
 
             return result;
+        }
+
+        public async Task<bool> AreTherePendingChanges()
+        {
+            var pendingChanges = await GetPendingChangesAsync();
+
+            return pendingChanges.Any();
         }
     }
 }

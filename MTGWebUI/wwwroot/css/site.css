@@ -17,6 +17,14 @@ body {
   margin-bottom: 60px;
 }
 
+#Legend {
+    z-index: 1;
+    position: fixed;
+    right: 25px;
+    bottom: 17px;
+    font-size:12px;
+}
+
 #Legend span {
     min-width: 100px;
     display: inline-block;
