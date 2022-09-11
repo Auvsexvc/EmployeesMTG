@@ -6,7 +6,7 @@ namespace MTGWebApi.Interfaces
     {
         Task AppendToFile<T>(T obj, string file);
 
-        Task CommitOperationToFile(Employee employee, string file);
+        Task CommitOperationToFile(Employee employee, string file, bool persist = false);
 
         Task CreateFile(string file);
 

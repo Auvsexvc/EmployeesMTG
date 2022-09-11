@@ -89,8 +89,7 @@ namespace MTGWebApi.Data
 
             foreach (var employee in stagedRecords)
             {
-                employee.State = Operation.Persist;
-                await _appDbFileHandler.CommitOperationToFile(employee, _dbFullPath);
+                await _appDbFileHandler.CommitOperationToFile(employee, _dbFullPath, true);
             }
         }
 

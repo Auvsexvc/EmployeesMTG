@@ -53,7 +53,7 @@ namespace MTGWebApi.Data
             }
         }
 
-        public async Task CommitOperationToFile(Employee employee, string file)
+        public async Task CommitOperationToFile(Employee employee, string file, bool persist = false)
         {
             if (!DoesFileExists(file))
             {
@@ -74,6 +74,10 @@ namespace MTGWebApi.Data
 
             if (employee.State != Operation.Delete)
             {
+                if (persist)
+                {
+                    employee.State = Operation.Persist;
+                }
                 await AppendToFile(employee, file);
             }
         }

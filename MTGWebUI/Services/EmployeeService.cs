@@ -1,5 +1,4 @@
-﻿using MTGWebUI.Exceptions;
-using MTGWebUI.Interfaces;
+﻿using MTGWebUI.Interfaces;
 using MTGWebUI.Models;
 
 namespace MTGWebUI.Services
@@ -24,11 +23,14 @@ namespace MTGWebUI.Services
 
                 if (result.IsSuccessStatusCode)
                 {
-                    employees = await result.Content.ReadFromJsonAsync<IList<EmployeeVM>>();
-                }
-                else
-                {
-                    throw new BadRequestException();
+                    var json = await result.Content.ReadAsStringAsync();
+
+                    if (!string.IsNullOrEmpty(json))
+                    {
+                        return await result.Content.ReadFromJsonAsync<IList<EmployeeVM>>();
+                    }
+
+                    employees = Enumerable.Empty<EmployeeVM>();
                 }
             }
 
