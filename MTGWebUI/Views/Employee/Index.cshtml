@@ -1,7 +1,7 @@
 ﻿@model IEnumerable<MTGWebUI.Models.EmployeeVM>
 
 @{
-    ViewData["Title"] = "Index";
+    ViewData["Title"] = "Employees";
 }
 <div class="row text">
     <div class="col-md">
@@ -10,7 +10,7 @@
         <hr />
         <div class="row">
             <div class="col-md">
-                <table class="table @ViewData["Title"]">
+                <table class="table tablesorter @ViewContext.RouteData.Values["Action"]!.ToString()">
                     <thead>
                         <tr>
                             @await Html.PartialAsync("_EmployeesListHeaders", Model)

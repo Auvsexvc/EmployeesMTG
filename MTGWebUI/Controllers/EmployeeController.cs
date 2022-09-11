@@ -26,14 +26,12 @@ namespace MTGWebUI.Controllers
                 ViewBag.Pending = "disabled";
             }
 
-
             foreach (var item in new EmployeeVM().GetType().GetProperties().Where(p => p.Name != "Id" && p.Name != "State").Select(p => p.Name))
             {
                 ViewData[item] = sortingOrder == item ? item + "Desc" : item;
             }
 
             employees = SortEmployeesByPropertyName(employees, sortingOrder);
-
 
             if (!string.IsNullOrEmpty(searchString))
             {
@@ -97,7 +95,6 @@ namespace MTGWebUI.Controllers
 
         public async Task<IActionResult> Pending(string? sortingOrder, string? searchString = "")
         {
-
             var employeesPending = await _employeeService.GetPendingChangesAsync();
             if (!employeesPending.Any())
             {
@@ -164,6 +161,34 @@ namespace MTGWebUI.Controllers
             return View("Index", employees);
         }
 
+        private static IEnumerable<EmployeeVM> SortEmployeesByPropertyName(IEnumerable<EmployeeVM> employees, string propName)
+        {
+            return propName switch
+            {
+                "FirstName" => employees.OrderBy(e => e.FirstName),
+                "FirstNameDesc" => employees.OrderByDescending(e => e.FirstName),
+                "LastName" => employees.OrderBy(e => e.LastName),
+                "LastNameDesc" => employees.OrderByDescending(e => e.LastName),
+                "StreetName" => employees.OrderBy(e => e.StreetName),
+                "StreetNameDesc" => employees.OrderByDescending(e => e.StreetName),
+                "HouseNumber" => employees.OrderBy(e => e.HouseNumber),
+                "HouseNumberDesc" => employees.OrderByDescending(e => e.HouseNumber),
+                "ApartmentNumber" => employees.OrderBy(e => e.ApartmentNumber),
+                "ApartmentNumberDesc" => employees.OrderByDescending(e => e.ApartmentNumber),
+                "PostalCode" => employees.OrderBy(e => e.PostalCode),
+                "PostalCodeDesc" => employees.OrderByDescending(e => e.PostalCode),
+                "Town" => employees.OrderBy(e => e.Town),
+                "TownDesc" => employees.OrderByDescending(e => e.Town),
+                "PhoneNumber" => employees.OrderBy(e => e.PhoneNumber),
+                "PhoneNumberDesc" => employees.OrderByDescending(e => e.PhoneNumber),
+                "DateOfBirth" => employees.OrderBy(e => e.DateOfBirth),
+                "DateOfBirthDesc" => employees.OrderByDescending(e => e.DateOfBirth),
+                "Age" => employees.OrderBy(e => e.Age),
+                "AgeDesc" => employees.OrderByDescending(e => e.Age),
+                _ => employees.OrderBy(e => e.FirstName),
+            };
+        }
+
         private string? SessionHandlerForSearching(string? searchString)
         {
             if (searchString == null)
@@ -220,36 +245,6 @@ namespace MTGWebUI.Controllers
             }
 
             return View(employeeDetails);
-        }
-
-        private IEnumerable<EmployeeVM> SortEmployeesByPropertyName(IEnumerable<EmployeeVM> employees, string propName)
-        {
-            employees = propName switch
-            {
-                "FirstName" => employees.OrderBy(e => e.FirstName),
-                "FirstNameDesc" => employees.OrderByDescending(e => e.FirstName),
-                "LastName" => employees.OrderBy(e => e.LastName),
-                "LastNameDesc" => employees.OrderByDescending(e => e.LastName),
-                "StreetName" => employees.OrderBy(e => e.StreetName),
-                "StreetNameDesc" => employees.OrderByDescending(e => e.StreetName),
-                "HouseNumber" => employees.OrderBy(e => e.HouseNumber),
-                "HouseNumberDesc" => employees.OrderByDescending(e => e.HouseNumber),
-                "ApartmentNumber" => employees.OrderBy(e => e.ApartmentNumber),
-                "ApartmentNumberDesc" => employees.OrderByDescending(e => e.ApartmentNumber),
-                "PostalCode" => employees.OrderBy(e => e.PostalCode),
-                "PostalCodeDesc" => employees.OrderByDescending(e => e.PostalCode),
-                "Town" => employees.OrderBy(e => e.Town),
-                "TownDesc" => employees.OrderByDescending(e => e.Town),
-                "PhoneNumber" => employees.OrderBy(e => e.PhoneNumber),
-                "PhoneNumberDesc" => employees.OrderByDescending(e => e.PhoneNumber),
-                "DateOfBirth" => employees.OrderBy(e => e.DateOfBirth),
-                "DateOfBirthDesc" => employees.OrderByDescending(e => e.DateOfBirth),
-                "Age" => employees.OrderBy(e => e.Age),
-                "AgeDesc" => employees.OrderByDescending(e => e.Age),
-                _ => employees.OrderBy(e => e.FirstName),
-            };
-
-            return employees;
         }
     }
 }

@@ -1,5 +1,4 @@
-﻿using MTGWebUI.Helper;
-using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel.DataAnnotations;
 
 namespace MTGWebUI.Models
 {

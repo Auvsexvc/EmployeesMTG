@@ -18,10 +18,10 @@
                     <span class="navbar-toggler-icon"></span>
                 </button>
                 <div class="navbar-collapse collapse d-sm-inline-flex justify-content-between" style="display: block !important;">
-                    @if(@ViewData["Title"] == "Index" || @ViewData["Title"] == "Pending")
+                    @if(ViewContext.RouteData.Values["Action"]!.ToString() == "Index" || ViewContext.RouteData.Values["Action"]!.ToString() == "Pending")
                     {
                         <div class="float-end">
-                            <form class="form-inline my-2 my-lg-0 d-flex" asp-controller="Employee" asp-action="@ViewData["Title"]" style="padding-right: 25px;">
+                            <form class="form-inline my-2 my-lg-0 d-flex" asp-controller="Employee" style="padding-right: 25px;">
                                 @Html.AntiForgeryToken()
                                     @if (!string.IsNullOrEmpty(ViewBag.SearchString))
                                     {

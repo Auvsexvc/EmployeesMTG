@@ -50,3 +50,46 @@ table tr.Create, span.Create {
 .Index th {
     vertical-align: middle;
 }
+
+table {
+    font-size: small;
+}
+
+table.tablesorter {
+    margin: 10px 0pt 15px;
+    width: 100%;
+    text-align: left;
+}
+
+table.tablesorter thead tr th, table.tablesorter tfoot tr th {
+    background-color: #ffffffad;
+    border: 1px solid #FFF;
+    padding: 4px;
+    vertical-align: middle;
+    padding-bottom: 12px;
+}
+
+table.tablesorter thead tr th.headerSort{
+    background-image: url(../bg.gif);
+    background-repeat: no-repeat;
+    background-position: bottom right;
+    cursor: pointer;
+}
+table.tablesorter thead tr th a{
+    display:block;
+    text-decoration:none;
+    color:black;
+}
+
+table.tablesorter tbody td {
+    padding: 4px;
+    vertical-align: middle;
+}
+
+table.tablesorter thead tr .headerSortUp {
+    background-image: url(../asc.gif) !important;
+}
+
+table.tablesorter thead tr .headerSortDown {
+    background-image: url(../desc.gif) !important;
+}

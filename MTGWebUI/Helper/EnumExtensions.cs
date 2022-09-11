@@ -6,13 +6,13 @@ namespace MTGWebUI.Helper
 {
     public static class EnumExtensions
     {
-        public static String GetDisplayName(this Operation value)
+        public static string GetDisplayName(this Operation value)
         {
             var dictionary = GetEnumValueNames(value.GetType());
             return dictionary[(int)value];
         }
 
-        private static IDictionary<int, String> GetEnumValueNames(Type type)
+        private static IDictionary<int, string> GetEnumValueNames(Type type)
         {
             var names = type.GetFields(BindingFlags.Public | BindingFlags.Static)
                 .Select(f => f.GetCustomAttribute<DisplayAttribute>()?.Name ?? f.Name);
