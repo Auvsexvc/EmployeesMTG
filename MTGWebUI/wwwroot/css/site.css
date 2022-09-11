@@ -28,19 +28,20 @@ body {
 #Legend span {
     min-width: 100px;
     display: inline-block;
+    margin-left: 10px;
 }
 
 table tr.Delete, span.Delete {
-    background-color: #fde7e7;
+    background-color: #fb9292;
 }
 
 
 table tr.Update, span.Update {
-    background-color: #fffaef;
+    background-color: #f9d68a;
 }
 
 table tr.Create, span.Create {
-    background-color: #eff7ff;
+    background-color: #85c2ff;
 }
 
 #Save, #Cancel, #Pending {
@@ -59,6 +60,7 @@ table.tablesorter {
     margin: 10px 0pt 15px;
     width: 100%;
     text-align: left;
+    white-space: nowrap;
 }
 
 table.tablesorter thead tr th, table.tablesorter tfoot tr th {
@@ -81,9 +83,10 @@ table.tablesorter thead tr th a{
     color:black;
 }
 
-table.tablesorter tbody td {
-    padding: 4px;
+
+table .tablesorter tbody td {
     vertical-align: middle;
+    white-space: nowrap;
 }
 
 table.tablesorter thead tr .headerSortUp {
@@ -92,4 +95,14 @@ table.tablesorter thead tr .headerSortUp {
 
 table.tablesorter thead tr .headerSortDown {
     background-image: url(../desc.gif) !important;
+}
+
+#Leegend td {
+    white-space: nowrap;
+}
+
+footer {
+    position: fixed !important;
+    background-color: #060606a3;
+    z-index: auto;
 }

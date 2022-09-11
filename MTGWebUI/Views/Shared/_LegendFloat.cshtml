@@ -9,7 +9,9 @@
             }
             @foreach (var operation in Model.Where(m=>m.State!= 0).Select(m=>m.State).Distinct().OrderBy(s=>s))
             {
-                <td style="white-space: nowrap;"><span class="@operation">&nbsp;</span> - @operation.GetDisplayName()</td>
+                <td>
+                    <span class="@operation">&nbsp;</span> - @operation.GetDisplayName()
+                </td>
             }
             </tr>
         </tbody>

@@ -18,16 +18,17 @@
                         </tr>
                     </thead>
                     <tbody>
-                @foreach (var item in Model) {
-                            <tr class="@item.State.ToString()">
+                    @foreach (var item in Model)
+                    {
+                        <tr class="@item.State.ToString()">
                             @await Html.PartialAsync("_EmployeesListRow", item)
-                            <td class="align-middle" style="white-space:nowrap;">
+                            <td class="align-middle";">
                                 @Html.ActionLink("Edit", "Edit", new {  id = item.Id }, new {@class="btn btn-warning btn-sm" })
                                 @Html.ActionLink("Details", "Details", new { id=item.Id  }, new {@class="btn btn-secondary btn-sm" })
                                 @Html.ActionLink("Delete", "Delete", new {  id=item.Id }, new {@class="btn btn-danger btn-sm" })
                             </td>
                         </tr>
-                }
+                    }
                     </tbody>
                 </table>
             </div>
