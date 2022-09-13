@@ -3,7 +3,7 @@ using System.ComponentModel.DataAnnotations;
 
 namespace MTGWebUI.Models
 {
-    public class EmployeeVM
+    public class EmployeeVM : IDisposable
     {
         public Guid Id { get; set; }
 
@@ -38,5 +38,7 @@ namespace MTGWebUI.Models
         public int Age { get; set; }
 
         public Operation State { get; set; }
+
+        public void Dispose() => GC.Collect();
     }
 }

@@ -224,7 +224,9 @@ namespace MTGWebUI.Controllers
 
         private static IEnumerable<PropertyInfo> GetDisplayPropertiesForEmployeeVM()
         {
-            return new EmployeeVM().GetType().GetProperties().Where(p => p.Name != "Id" && p.Name != "State");
+            using var obj = new EmployeeVM();
+
+            return obj.GetType().GetProperties().Where(p => p.Name != "Id" && p.Name != "State");
         }
     }
 }
