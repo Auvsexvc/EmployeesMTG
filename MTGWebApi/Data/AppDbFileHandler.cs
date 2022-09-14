@@ -109,7 +109,7 @@ namespace MTGWebApi.Data
             };
         }
 
-        private string[] LineRemover(string[] lines, int[] lineNumbers)
+        private static string[] LineRemover(string[] lines, int[] lineNumbers)
         {
             List<string> arrLine = lines.ToList();
             foreach (var lineNumber in lineNumbers.Reverse())
