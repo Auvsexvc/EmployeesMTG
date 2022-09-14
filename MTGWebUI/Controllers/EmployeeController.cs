@@ -1,4 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using MTGWebUI.Extensions;
+using MTGWebUI.Helper;
 using MTGWebUI.Interfaces;
 using MTGWebUI.Models;
 using System.Reflection;
@@ -27,7 +29,7 @@ namespace MTGWebUI.Controllers
                 ViewBag.Pending = "disabled";
             }
 
-            var displayProps = GetDisplayPropertiesForEmployeeVM();
+            var displayProps = AppStatic.GetDisplayPropertiesForEmployeeVM();
 
             foreach (var item in displayProps.Select(p => p.Name))
             {
@@ -35,7 +37,7 @@ namespace MTGWebUI.Controllers
             }
             ViewBag.Sorting = sortingOrder;
 
-            employees = SortEmployeesByPropertyName(employees, sortingOrder);
+            employees = employees.SortEmployeesByPropertyName(sortingOrder);
 
             if (!string.IsNullOrEmpty(searchString))
             {
@@ -108,14 +110,14 @@ namespace MTGWebUI.Controllers
             sortingOrder = SessionHandlerForSorting(sortingOrder);
             searchString = SessionHandlerForSearching(searchString);
 
-            var displayProps = GetDisplayPropertiesForEmployeeVM();
+            var displayProps = AppStatic.GetDisplayPropertiesForEmployeeVM();
 
             foreach (var item in displayProps.Select(p => p.Name))
             {
                 ViewData[item] = sortingOrder == item ? item + "Desc" : item;
             }
 
-            employeesPending = SortEmployeesByPropertyName(employeesPending, sortingOrder);
+            employeesPending = employeesPending.SortEmployeesByPropertyName(sortingOrder);
             ViewBag.Sorting = sortingOrder;
 
             if (!string.IsNullOrEmpty(searchString))
@@ -146,24 +148,6 @@ namespace MTGWebUI.Controllers
             await _employeeService.CancelAsync();
 
             return RedirectToAction("Index");
-        }
-
-        private static IEnumerable<EmployeeVM> SortEmployeesByPropertyName(IEnumerable<EmployeeVM> employees, string sortingOrder)
-        {
-            var propName = string.Concat(sortingOrder.TakeLast(4)) == "Desc" && sortingOrder.Length > 4 ? string.Concat(sortingOrder.SkipLast(4)) : sortingOrder;
-            var item = GetDisplayPropertiesForEmployeeVM().FirstOrDefault(p => p.Name == propName);
-
-            if (item == null)
-            {
-                return employees;
-            }
-
-            if (string.Concat(sortingOrder.TakeLast(4)) == "Desc" && sortingOrder.Length > 4)
-            {
-                return employees.OrderByDescending(e => item.GetValue(e));
-            }
-
-            return employees.OrderBy(e => item.GetValue(e));
         }
 
         private string? SessionHandlerForSearching(string? searchString)
@@ -222,13 +206,6 @@ namespace MTGWebUI.Controllers
             }
 
             return View(employeeDetails);
-        }
-
-        private static IEnumerable<PropertyInfo> GetDisplayPropertiesForEmployeeVM()
-        {
-            using var obj = new EmployeeVM();
-
-            return obj.GetType().GetProperties().Where(p => p.Name != "Id" && p.Name != "State");
         }
     }
 }
