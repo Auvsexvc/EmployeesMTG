@@ -31,17 +31,6 @@ namespace MTGWebApi.Data
             return employees;
         }
 
-        public string[] LineRemover(string[] lines, int[] lineNumbers)
-        {
-            List<string> arrLine = lines.ToList();
-            foreach (var lineNumber in lineNumbers.Reverse())
-            {
-                arrLine.RemoveAt(lineNumber);
-            }
-
-            return arrLine.ToArray();
-        }
-
         public async Task AppendToFile<T>(T obj, string file)
         {
             if (obj is not null)
@@ -118,6 +107,17 @@ namespace MTGWebApi.Data
                 DateOfBirth = DateTime.Parse(values[9]),
                 State = Enum.Parse<Operation>(values[10])
             };
+        }
+
+        private string[] LineRemover(string[] lines, int[] lineNumbers)
+        {
+            List<string> arrLine = lines.ToList();
+            foreach (var lineNumber in lineNumbers.Reverse())
+            {
+                arrLine.RemoveAt(lineNumber);
+            }
+
+            return arrLine.ToArray();
         }
     }
 }

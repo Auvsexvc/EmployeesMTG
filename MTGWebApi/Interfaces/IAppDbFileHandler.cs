@@ -14,8 +14,6 @@ namespace MTGWebApi.Interfaces
 
         Task<IEnumerable<Employee>> GetEmployeesFromFileAsync(string file);
 
-        string[] LineRemover(string[] lines, int[] lineNumbers);
-
         bool DoesFileExists(string file);
     }
 }
