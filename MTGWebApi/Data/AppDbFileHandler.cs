@@ -95,6 +95,11 @@ namespace MTGWebApi.Data
             return File.Exists(file);
         }
 
+        public async Task DeleteFile(string file)
+        {
+            await Task.Run(() => File.Delete(file));
+        }
+
         private static Employee ConvertToEmployee(string line)
         {
             var values = line.Split(';');
@@ -113,11 +118,6 @@ namespace MTGWebApi.Data
                 DateOfBirth = DateTime.Parse(values[9]),
                 State = Enum.Parse<Operation>(values[10])
             };
-        }
-
-        public async Task DeleteFile(string file)
-        {
-            await Task.Run(() => File.Delete(file));
         }
     }
 }
