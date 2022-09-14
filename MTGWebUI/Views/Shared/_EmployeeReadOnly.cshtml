@@ -46,5 +46,5 @@
 </div>
 <div class="form-group">
     <label asp-for="State" class="control-label"></label>
-    <input asp-for="State" class="form-control" readonly />
+    <input value="@Model.State.GetDisplayName()" class="form-control" readonly />
 </div>
