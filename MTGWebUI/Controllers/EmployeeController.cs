@@ -193,7 +193,7 @@ namespace MTGWebUI.Controllers
 
         private async Task<IActionResult> GetEmployeeAsync(Guid id)
         {
-            if (Request.Headers["Referer"] != string.Empty)
+            if (Request.Headers["Referer"] != string.Empty && Request.Headers["Referer"].ToString().Contains("Details"))
             {
                 ViewData["Reffer"] = Request.Headers["Referer"].ToString();
             }

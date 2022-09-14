@@ -14,7 +14,7 @@ namespace MTGWebUI.Services
 
         public async Task<IEnumerable<EmployeeVM>> GetEmployeesAsync()
         {
-            IEnumerable<EmployeeVM>? employees = null;
+            IEnumerable<EmployeeVM> employees = Enumerable.Empty<EmployeeVM>();
 
             using (var client = new HttpClient())
             {
@@ -27,14 +27,12 @@ namespace MTGWebUI.Services
 
                     if (!string.IsNullOrEmpty(json))
                     {
-                        return await result.Content.ReadFromJsonAsync<IList<EmployeeVM>>();
+                        return (await result.Content.ReadFromJsonAsync<IList<EmployeeVM>>())!;
                     }
-
-                    employees = Enumerable.Empty<EmployeeVM>();
                 }
             }
 
-            return employees!;
+            return employees;
         }
 
         public async Task<EmployeeVM> GetEmployeeByIdAsync(Guid id)

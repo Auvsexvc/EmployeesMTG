@@ -2,7 +2,7 @@
 using System.ComponentModel.DataAnnotations;
 using System.Reflection;
 
-namespace MTGWebUI.Helper
+namespace MTGWebUI.Extensions
 {
     public static class EnumExtensions
     {

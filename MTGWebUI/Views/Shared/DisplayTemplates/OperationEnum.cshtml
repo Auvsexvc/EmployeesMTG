@@ -1,0 +1,7 @@
+﻿@using MTGWebUI.Enums
+@using MTGWebUI.Extensions
+@model Operation?
+@if (Model.HasValue)
+{
+    @Model.Value.GetDisplayName()
+}

@@ -14,13 +14,13 @@
                 <form asp-action="Delete">
                     <div class="form-group mt-2">
                         <input type="submit" value="Delete" class="btn btn-danger" />
-                        @if (!string.IsNullOrWhiteSpace(ViewData["Reffer"]!.ToString()))
+                        @if (ViewData["Reffer"] != null)
                         {
-                            <a class="btn btn-outline-secondary float-end" href="@ViewData["Reffer"]">Cancel</a>
+                            <a class="btn btn-outline-secondary float-end" asp-action="Details" asp-route-id="@Model.Id">Cancel</a>
                         }
                         else
                         {
-                            <a class="btn btn-outline-secondary float-end" asp-action="Index">Back to List</a>
+                            <a class="btn btn-outline-secondary float-end" asp-action="Index">Cancel</a>
                         }
                     </div>
                 </form>
