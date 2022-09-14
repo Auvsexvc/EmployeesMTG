@@ -2,6 +2,7 @@
 using MTGWebApi.Entities;
 using MTGWebApi.Enums;
 using MTGWebApi.Exceptions;
+using MTGWebApi.Extensions;
 using MTGWebApi.Helper;
 using MTGWebApi.Interfaces;
 using MTGWebApi.Models;
@@ -83,7 +84,7 @@ namespace MTGWebApi.Services
 
             foreach (var employee in employees)
             {
-                EmployeeVM employeeVM = MakeEmployeeVM(employee);
+                EmployeeVM employeeVM = employee.ConvertToEmployeeVM();
                 employeeVMs.Add(employeeVM);
             }
 
@@ -101,7 +102,7 @@ namespace MTGWebApi.Services
                 throw new NotFoundException(string.Format(Messages.MSG_NOTFOUND, id));
             }
 
-            return MakeEmployeeVM(employee);
+            return employee.ConvertToEmployeeVM();
         }
 
         public async Task UpdateAsync(Guid id, UpdateEmployeeDto dto)
@@ -148,7 +149,7 @@ namespace MTGWebApi.Services
         {
             var pendingChanges = await _appDbContext.GetStagedChangesAsync();
 
-            return pendingChanges.Select(x => MakeEmployeeVM(x));
+            return pendingChanges.Select(x => x.ConvertToEmployeeVM());
         }
 
         public async Task CancelChangesAsync()
@@ -156,24 +157,6 @@ namespace MTGWebApi.Services
             var pendingChanges = await _appDbContext.GetStagedChangesAsync();
             await _appDbContext.CancelChangesAsync();
             _logger.LogInformation(string.Format(Messages.MSG_CANCELED, pendingChanges.Count()));
-        }
-
-        private static EmployeeVM MakeEmployeeVM(Employee employee)
-        {
-            return new()
-            {
-                Id = employee.Id,
-                FirstName = employee.FirstName,
-                LastName = employee.LastName,
-                StreetName = employee.StreetName,
-                HouseNumber = employee.HouseNumber,
-                ApartmentNumber = employee.ApartmentNumber,
-                PostalCode = employee.PostalCode,
-                Town = employee.Town,
-                PhoneNumber = employee.PhoneNumber,
-                DateOfBirth = employee.DateOfBirth,
-                State = employee.State
-            };
         }
     }
 }

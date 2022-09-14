@@ -1,5 +1,6 @@
 ﻿using MTGWebApi.Entities;
 using MTGWebApi.Enums;
+using MTGWebApi.Extensions;
 using MTGWebApi.Interfaces;
 
 namespace MTGWebApi.Data
@@ -22,7 +23,7 @@ namespace MTGWebApi.Data
                     var line = await streamReader.ReadLineAsync();
                     if (!string.IsNullOrEmpty(line))
                     {
-                        var employee = ConvertToEmployee(line);
+                        var employee = line.ConvertToEmployee();
                         await Task.Run(() => employees.Add(employee));
                     }
                 }
@@ -87,26 +88,6 @@ namespace MTGWebApi.Data
         public async Task DeleteFile(string file)
         {
             await Task.Run(() => File.Delete(file));
-        }
-
-        private static Employee ConvertToEmployee(string line)
-        {
-            var values = line.Split(';');
-
-            return new Employee()
-            {
-                Id = Guid.Parse(values[0]),
-                FirstName = values[1],
-                LastName = values[2],
-                StreetName = values[3],
-                HouseNumber = values[4],
-                ApartmentNumber = values[5],
-                PostalCode = values[6],
-                Town = values[7],
-                PhoneNumber = values[8],
-                DateOfBirth = DateTime.Parse(values[9]),
-                State = Enum.Parse<Operation>(values[10])
-            };
         }
 
         private static string[] LineRemover(string[] lines, int[] lineNumbers)
