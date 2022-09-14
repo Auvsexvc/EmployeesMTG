@@ -26,6 +26,7 @@ namespace MTGWebUI.Models
         public string Town { get; set; } = string.Empty;
 
         [Required]
+        [Phone]
         public string PhoneNumber { get; set; } = string.Empty;
 
         [Required]
