@@ -3,7 +3,6 @@ using MTGWebUI.Extensions;
 using MTGWebUI.Helper;
 using MTGWebUI.Interfaces;
 using MTGWebUI.Models;
-using System.Reflection;
 
 namespace MTGWebUI.Controllers
 {
@@ -24,10 +23,7 @@ namespace MTGWebUI.Controllers
             var employees = await _employeeService.GetEmployeesAsync();
             var areTherePendingChanges = await _employeeService.AreTherePendingChanges();
 
-            if (!areTherePendingChanges)
-            {
-                ViewBag.Pending = "disabled";
-            }
+            employees = employees.SortEmployeesByPropertyName(sortingOrder);
 
             var displayProps = AppStatic.GetDisplayPropertiesForEmployeeVM();
 
@@ -35,9 +31,13 @@ namespace MTGWebUI.Controllers
             {
                 ViewData[item] = sortingOrder == item ? item + "Desc" : item;
             }
-            ViewBag.Sorting = sortingOrder;
 
-            employees = employees.SortEmployeesByPropertyName(sortingOrder);
+            if (!areTherePendingChanges)
+            {
+                ViewBag.Pending = "disabled";
+            }
+
+            ViewBag.Sorting = sortingOrder;
 
             if (!string.IsNullOrEmpty(searchString))
             {
@@ -112,12 +112,13 @@ namespace MTGWebUI.Controllers
 
             var displayProps = AppStatic.GetDisplayPropertiesForEmployeeVM();
 
+            employeesPending = employeesPending.SortEmployeesByPropertyName(sortingOrder);
+
             foreach (var item in displayProps.Select(p => p.Name))
             {
                 ViewData[item] = sortingOrder == item ? item + "Desc" : item;
             }
 
-            employeesPending = employeesPending.SortEmployeesByPropertyName(sortingOrder);
             ViewBag.Sorting = sortingOrder;
 
             if (!string.IsNullOrEmpty(searchString))
