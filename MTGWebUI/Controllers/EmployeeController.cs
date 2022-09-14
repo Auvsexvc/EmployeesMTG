@@ -33,6 +33,7 @@ namespace MTGWebUI.Controllers
             {
                 ViewData[item] = sortingOrder == item ? item + "Desc" : item;
             }
+            ViewBag.Sorting = sortingOrder;
 
             employees = SortEmployeesByPropertyName(employees, sortingOrder);
 
@@ -115,6 +116,7 @@ namespace MTGWebUI.Controllers
             }
 
             employeesPending = SortEmployeesByPropertyName(employeesPending, sortingOrder);
+            ViewBag.Sorting = sortingOrder;
 
             if (!string.IsNullOrEmpty(searchString))
             {

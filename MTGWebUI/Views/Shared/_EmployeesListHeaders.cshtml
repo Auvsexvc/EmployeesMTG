@@ -1,31 +1,31 @@
 ﻿@model IEnumerable<MTGWebUI.Models.EmployeeVM>
-<th class="headerSort @(!Context.Request.Query["sortingOrder"].ToString().Contains("FirstName") ? string.Empty : Context.Request.Query["sortingOrder"].ToString().Contains("Desc") ? "headerSortDown" : "headerSortUp")">
+<th class="headerSort @(!ViewBag.Sorting.ToString().Contains("FirstName") ? string.Empty :ViewBag.Sorting.ToString().Contains("Desc") ? "headerSortDown" : "headerSortUp")">
     @Html.ActionLink(@Html.DisplayNameFor(model => model.FirstName), ViewContext.RouteData.Values["Action"]!.ToString(), new {sortingOrder = ViewData["FirstName"]})
 </th>
-<th class="headerSort @(!Context.Request.Query["sortingOrder"].ToString().Contains("LastName") ? string.Empty : Context.Request.Query["sortingOrder"].ToString().Contains("Desc") ? "headerSortDown" : "headerSortUp")">
+<th class="headerSort @(!ViewBag.Sorting.ToString().Contains("LastName") ? string.Empty : ViewBag.Sorting.ToString().Contains("Desc") ? "headerSortDown" : "headerSortUp")">
     @Html.ActionLink(@Html.DisplayNameFor(model => model.LastName), ViewContext.RouteData.Values["Action"]!.ToString(), new {sortingOrder = ViewData["LastName"]})
 </th>
-<th class="headerSort @(!Context.Request.Query["sortingOrder"].ToString().Contains("StreetName") ? string.Empty : Context.Request.Query["sortingOrder"].ToString().Contains("Desc") ? "headerSortDown" : "headerSortUp")">
+<th class="headerSort @(!ViewBag.Sorting.ToString().Contains("StreetName") ? string.Empty : ViewBag.Sorting.ToString().Contains("Desc") ? "headerSortDown" : "headerSortUp")">
     @Html.ActionLink(@Html.DisplayNameFor(model => model.StreetName), ViewContext.RouteData.Values["Action"]!.ToString(), new {sortingOrder = ViewData["StreetName"]})
 </th>
-<th class="headerSort @(!Context.Request.Query["sortingOrder"].ToString().Contains("HouseNumber") ? string.Empty : Context.Request.Query["sortingOrder"].ToString().Contains("Desc") ? "headerSortDown" : "headerSortUp")">
+<th class="headerSort @(!ViewBag.Sorting.ToString().Contains("HouseNumber") ? string.Empty : ViewBag.Sorting.ToString().Contains("Desc") ? "headerSortDown" : "headerSortUp")">
     @Html.ActionLink(@Html.DisplayNameFor(model => model.HouseNumber), ViewContext.RouteData.Values["Action"]!.ToString(), new {sortingOrder = ViewData["HouseNumber"]})
 </th>
-<th class="headerSort @(!Context.Request.Query["sortingOrder"].ToString().Contains("ApartmentNumber") ? string.Empty : Context.Request.Query["sortingOrder"].ToString().Contains("Desc") ? "headerSortDown" : "headerSortUp")">
+<th class="headerSort @(!ViewBag.Sorting.ToString().Contains("ApartmentNumber") ? string.Empty : ViewBag.Sorting.ToString().Contains("Desc") ? "headerSortDown" : "headerSortUp")">
     @Html.ActionLink(@Html.DisplayNameFor(model => model.ApartmentNumber), ViewContext.RouteData.Values["Action"]!.ToString(), new {sortingOrder = ViewData["ApartmentNumber"]})
 </th>
-<th class="headerSort @(!Context.Request.Query["sortingOrder"].ToString().Contains("PostalCode") ? string.Empty : Context.Request.Query["sortingOrder"].ToString().Contains("Desc") ? "headerSortDown" : "headerSortUp")">
+<th class="headerSort @(!ViewBag.Sorting.ToString().Contains("PostalCode") ? string.Empty : ViewBag.Sorting.ToString().Contains("Desc") ? "headerSortDown" : "headerSortUp")">
     @Html.ActionLink(@Html.DisplayNameFor(model => model.PostalCode), ViewContext.RouteData.Values["Action"]!.ToString(), new {sortingOrder = ViewData["PostalCode"]})
 </th>
-<th class="headerSort @(!Context.Request.Query["sortingOrder"].ToString().Contains("Town") ? string.Empty : Context.Request.Query["sortingOrder"].ToString().Contains("Desc") ? "headerSortDown" : "headerSortUp")">
+<th class="headerSort @(!ViewBag.Sorting.ToString().Contains("Town") ? string.Empty : ViewBag.Sorting.ToString().Contains("Desc") ? "headerSortDown" : "headerSortUp")">
     @Html.ActionLink(@Html.DisplayNameFor(model => model.Town), ViewContext.RouteData.Values["Action"]!.ToString(), new {sortingOrder = ViewData["Town"]})
 </th>
-<th class="headerSort @(!Context.Request.Query["sortingOrder"].ToString().Contains("PhoneNumber") ? string.Empty : Context.Request.Query["sortingOrder"].ToString().Contains("Desc") ? "headerSortDown" : "headerSortUp")">
+<th class="headerSort @(!ViewBag.Sorting.ToString().Contains("PhoneNumber") ? string.Empty : ViewBag.Sorting.ToString().Contains("Desc") ? "headerSortDown" : "headerSortUp")">
     @Html.ActionLink(@Html.DisplayNameFor(model => model.PhoneNumber), ViewContext.RouteData.Values["Action"]!.ToString(), new {sortingOrder = ViewData["PhoneNumber"]})
 </th>
-<th class="headerSort @(!Context.Request.Query["sortingOrder"].ToString().Contains("DateOfBirth") ? string.Empty : Context.Request.Query["sortingOrder"].ToString().Contains("Desc") ? "headerSortDown" : "headerSortUp")">
+<th class="headerSort @(!ViewBag.Sorting.ToString().Contains("DateOfBirth") ? string.Empty : ViewBag.Sorting.ToString().Contains("Desc") ? "headerSortDown" : "headerSortUp")">
     @Html.ActionLink(@Html.DisplayNameFor(model => model.DateOfBirth), ViewContext.RouteData.Values["Action"]!.ToString(), new {sortingOrder = ViewData["DateOfBirth"]})
 </th>
-<th class="headerSort @(!Context.Request.Query["sortingOrder"].ToString().Contains("Age") ? string.Empty : Context.Request.Query["sortingOrder"].ToString().Contains("Desc") ? "headerSortDown" : "headerSortUp")">
+<th class="headerSort @(!ViewBag.Sorting.ToString().Contains("Age") ? string.Empty : ViewBag.Sorting.ToString().Contains("Desc") ? "headerSortDown" : "headerSortUp")">
     @Html.ActionLink(@Html.DisplayNameFor(model => model.Age), ViewContext.RouteData.Values["Action"]!.ToString(), new {sortingOrder = ViewData["Age"]})
 </th>
